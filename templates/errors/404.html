@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <div class="error-title">Page Not Found</div>
+        <div class="error-message">
+            <p>Oops! The page you're looking for doesn't exist.</p>
+            <p>It might have been moved or deleted.</p>
+        </div>
+        <div class="error-actions">
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Go to Homepage</a>
+            <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.error-container {
+    text-align: center;
+    max-width: 600px;
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 700;
+    color: var(--primary-color, #6366f1);
+    line-height: 1;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: var(--text-secondary, #666);
+    margin-bottom: 2rem;
+}
+
+.error-message p {
+    margin: 0.5rem 0;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-actions .btn {
+    padding: 0.75rem 2rem;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.error-actions .btn-primary {
+    background: var(--primary-color, #6366f1);
+    color: white;
+}
+
+.error-actions .btn-primary:hover {
+    background: var(--primary-dark, #4f46e5);
+    transform: translateY(-2px);
+}
+
+.error-actions .btn-secondary {
+    background: var(--secondary-color, #e5e7eb);
+    color: var(--text-color, #333);
+}
+
+.error-actions .btn-secondary:hover {
+    background: var(--secondary-dark, #d1d5db);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 5rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .error-message {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Blog - GameHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="blog-container">
+        <div class="blog-header">
+            <h1 class="neon-text">GameHub Blog</h1>
+            <p>Share your gaming experiences and strategies</p>
+            {% if session.get('loggedin') %}
+                <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary glow">Create New Post</a>
+            {% endif %}
+        </div>
+
+        <div class="blog-actions">
+            <a href="{{ url_for('blog.my_posts') }}" class="btn btn-secondary">All Posts</a>
+            {% if session.get('loggedin') %}
+                <a href="{{ url_for('blog.my_posts') }}" class="btn btn-secondary">My Posts</a>
+            {% endif %}
+        </div>
+
+        <div class="posts-grid">
+            {% if posts %}
+                {% for post in posts %}
+                    <div class="post-card glass animate-fade-in">
+                        <div class="post-card-header">
+                            <h3>{{ post.title }}</h3>
+                            <div class="post-author">
+                                <span class="author-icon">👤</span>
+                                <span>{{ post.firstname }} {{ post.lastname }}</span>
+                            </div>
+                        </div>
+                        <div class="post-card-body">
+                            <p>{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</p>
+                        </div>
+                        <div class="post-card-footer">
+                            <span class="post-date">{{ post.created_at.strftime('%B %d, %Y') }}</span>
+                            <a href="{{ url_for('blog.view_post', post_id=post.id) }}" class="btn btn-sm btn-primary">Read More</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state glass">
+                    <h3>No posts yet</h3>
+                    <p>Be the first to share your gaming experience!</p>
+                    {% if session.get('loggedin') %}
+                        <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary glow">Create First Post</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - GameHub{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-header">
+            <h1 class="neon-text">Welcome, {{ user.firstname }}! 👋</h1>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Profile Card -->
+            <div class="dashboard-card glass">
+                <div class="card-header">
+                    <h3>👤 Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div class="profile-info">
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Full Name:</strong> {{ user.firstname }} {{ user.middlename }} {{ user.lastname }}</p>
+                        {% if user.birthday %}
+                        <p><strong>Age:</strong> {{ user.age }} years old</p>
+                        {% endif %}
+                        <p><strong>Member Since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    <a href="{{ url_for('dashboard.profile') }}" class="btn btn-primary btn-sm">Edit Profile</a>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="dashboard-card glass">
+                <div class="card-header">
+                    <h3>📊 Quick Stats</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-list">
+                        <div class="stat-item">
+                            <span class="stat-label">Games Available:</span>
+                            <span class="stat-value gradient-text">{{ games_count }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Your Posts:</span>
+                            <span class="stat-value gradient-text">{{ posts_count }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Account Status:</span>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-card glass">
+                <div class="card-header">
+                    <h3>⚡ Quick Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="action-buttons">
+                        <a href="{{ url_for('games.index') }}" class="btn btn-primary btn-block glow">
+                            🎮 Play Games
+                        </a>
+                        <a href="{{ url_for('blog.my_posts') }}" class="btn btn-secondary btn-block">
+                            📝 View Blog
+                        </a>
+                        <a href="{{ url_for('blog.create_post') }}" class="btn btn-secondary btn-block">
+                            ✍️ New Post
+                        </a>
+                        <a href="{{ url_for('dashboard.profile') }}" class="btn btn-secondary btn-block">
+                            ⚙️ Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Posts -->
+            <div class="dashboard-card glass full-width">
+                <div class="card-header">
+                    <h3>📝 Your Recent Posts</h3>
+                    <a href="{{ url_for('blog.my_posts') }}" class="btn btn-sm btn-secondary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_posts %}
+                        <div class="posts-list">
+                            {% for post in recent_posts[:3] %}
+                                <div class="post-item">
+                                    <h4>{{ post.title }}</h4>
+                                    <p>{{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}</p>
+                                    <div class="post-meta">
+                                        <span>{{ post.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                                        <div class="post-actions">
+                                            <a href="{{ url_for('blog.edit_post', post_id=post.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                                            <a href="{{ url_for('blog.view_post', post_id=post.id) }}" class="btn btn-sm btn-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">You haven't created any posts yet. <a href="{{ url_for('blog.create_post') }}" class="link-primary">Create your first post!</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

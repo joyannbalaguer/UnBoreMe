@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-5"><i class="fas fa-user-edit"></i> Edit User</h1>
+            <p class="lead">Editing profile for <strong>{{ user.username }}</strong></p>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <a href="{{ url_for('admin.view_user', user_id=user.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to User Details
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Update User Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="firstname" name="firstname" 
+                                       value="{{ user.firstname }}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="middlename" class="form-label">Middle Name</label>
+                                <input type="text" class="form-control" id="middlename" name="middlename" 
+                                       value="{{ user.middlename or '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="lastname" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="lastname" name="lastname" 
+                                       value="{{ user.lastname }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="birthday" class="form-label">Birthday</label>
+
+                                {# FIXED: no more .strftime, supports string or datetime or None #}
+                                <input type="date" class="form-control" id="birthday" name="birthday" 
+                                       value="{{ user.birthday if user.birthday else '' }}">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="contact" class="form-label">Contact Number</label>
+                                <input type="text" class="form-control" id="contact" name="contact" 
+                                       value="{{ user.contact or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Note:</strong> Username, email, and role cannot be changed through this form. 
+                            Contact system administrator for these changes.
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-save"></i> Update User
+                            </button>
+                            <a href="{{ url_for('admin.view_user', user_id=user.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

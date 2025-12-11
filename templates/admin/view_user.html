@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}View User - {{ user.username }}{% endblock %}
+
+{% block content %}
+{% set viewing_self = (session.get('user_id') == user.id) %}
+{% set viewing_admin = (user.role == 'admin') %}
+
+<div class="container mt-4">
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-5"><i class="fas fa-user"></i> User Details</h1>
+            <p class="lead">Viewing profile for <strong>{{ user.username }}</strong></p>
+        </div>
+    </div>
+
+    <!-- Navigation buttons -->
+    <div class="row mb-3">
+        <div class="col-md-12 d-flex gap-2">
+            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+
+            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit User
+            </a>
+
+            {% if not viewing_self %}
+                {% if user.is_active %}
+                <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" 
+                   class="btn btn-secondary"
+                   onclick="return confirm('Deactivate this user?')">
+                    <i class="fas fa-ban"></i> Deactivate
+                </a>
+                {% else %}
+                <a href="{{ url_for('admin.activate_user', user_id=user.id) }}" class="btn btn-success">
+                    <i class="fas fa-check"></i> Activate
+                </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- User Info -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-info-circle"></i> User Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr><th>ID:</th><td>{{ user.id }}</td></tr>
+                        <tr><th>Username:</th><td>{{ user.username }}</td></tr>
+                        <tr><th>Email:</th><td>{{ user.email }}</td></tr>
+                        <tr><th>First Name:</th><td>{{ user.firstname }}</td></tr>
+                        <tr><th>Middle Name:</th><td>{{ user.middlename or '-' }}</td></tr>
+                        <tr><th>Last Name:</th><td>{{ user.lastname }}</td></tr>
+
+                        <tr>
+                            <th>Birthday:</th>
+                            <td>
+                                {% if user.birthday %}
+                                    {% if user.birthday is string %}
+                                        {{ user.birthday }}
+                                    {% else %}
+                                        {{ user.birthday.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr><th>Age:</th><td>{{ user.age or '-' }}</td></tr>
+                        <tr><th>Contact:</th><td>{{ user.contact or '-' }}</td></tr>
+
+                        <tr>
+                            <th>Role:</th>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                <span class="badge bg-danger">Admin</span>
+                                {% else %}
+                                <span class="badge bg-secondary">User</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-warning">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Joined:</th>
+                            <td>
+                                {% if user.created_at %}
+                                    {% if user.created_at is string %}
+                                        {{ user.created_at }}
+                                    {% else %}
+                                        {{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Last Updated:</th>
+                            <td>
+                                {% if user.updated_at %}
+                                    {% if user.updated_at is string %}
+                                        {{ user.updated_at }}
+                                    {% else %}
+                                        {{ user.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {% endif %}
+                                {% else %}-{% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME ACCESS -->
+        {% if not viewing_admin and not viewing_self %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-gamepad"></i> Game Access</h5>
+                </div>
+                <div class="card-body">
+                    {% if games %}
+                    <ul class="list-group">
+                        {% for game in games %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ game.name }}</strong><br>
+                                <small class="text-muted">{{ game.description }}</small>
+                            </div>
+                            <div>
+                                {% if game.is_enabled %}
+                                <span class="badge bg-success me-2">Enabled</span>
+                                <form method="POST" action="{{ url_for('admin.toggle_game', user_id=user.id, game_id=game.id) }}" style="display:inline;">
+                                    <input type="hidden" name="action" value="disable">
+                                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-ban"></i></button>
+                                </form>
+                                {% else %}
+                                <span class="badge bg-secondary me-2">Disabled</span>
+                                <form method="POST" action="{{ url_for('admin.toggle_game', user_id=user.id, game_id=game.id) }}" style="display:inline;">
+                                    <input type="hidden" name="action" value="enable">
+                                    <button class="btn btn-sm btn-outline-success"><i class="fas fa-check"></i></button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No games available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- USER BLOG POSTS -->
+    {% if not viewing_self and not viewing_admin %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5><i class="fas fa-blog"></i> User Blog Posts</h5>
+                </div>
+                <div class="card-body">
+                    {% if posts %}
+                        <div class="list-group">
+                            {% for post in posts %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <h5>{{ post.title }}</h5>
+                                    <small>
+                                        {% if post.created_at is string %}
+                                            {{ post.created_at }}
+                                        {% else %}
+                                            {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <p>{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No blog posts yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

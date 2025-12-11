@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Home - UnBoreMe{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-content glass">
+            <h1 class="hero-title neon-text animate-fade-in">
+                Welcome to <span class="gradient-text">UnBoreMe</span>
+            </h1>
+            <p class="hero-subtitle animate-fade-in-delay">
+               Enjoy 8 easy-to-play browser games with bright visuals and smooth gameplay. 
+                 <br> Create an account, track your progress, and have fun competing with friends.<br></p>
+            
+
+            <!-- PATCHED: Removed Get Started and Login -->
+            <div class="hero-buttons">
+                {% if not session.get('loggedin') %}
+                    {# buttons removed as requested #}
+                {% else %}
+                    {% if session.get('role') == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-lg glow">Go to Dashboard</a>
+                    {% else %}
+                        <a href="{{ url_for('games.index') }}" class="btn btn-primary btn-lg glow">Play Now</a>
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary btn-lg">Dashboard</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <!-- END PATCH -->
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <h2 class="section-title neon-text">Features</h2>
+        <div class="features-grid">
+            <div class="feature-card glass">
+                <div class="feature-icon neon-icon">🎮</div>
+                <h3>8 Classic Games</h3>
+                <p>Play classic and modern games including Snake, Pong, Tetris, Breakout, Space Invaders, and more</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="feature-icon neon-icon">🔐</div>
+                <h3>Secure Authentication</h3>
+                <p>Sign in safely with email verification, OTP, and protected passwords.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="feature-icon neon-icon">✍️</div>
+                <h3>Blog Platform</h3>
+                <p>Share your gaming experiences and strategies with the community through our blog.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="feature-icon neon-icon">👤</div>
+                <h3>Simple Tutorials</h3>
+                <p>Each game has a quick guide so you can learn fast.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="feature-icon neon-icon">🎨</div>
+                <h3>Saved Data</h3>
+                <p>Your progress stays saved even if you switch devices</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="feature-icon neon-icon">⚡</div>
+                <h3>Progress Tracking</h3>
+                <p>Keep track of your game scores, wins, and improvements over time.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="stats-section glass">
+    <div class="container">
+        <h2 class="section-title neon-text">Platform Stats</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number gradient-text">8</div>
+                <div class="stat-label">Games Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number gradient-text">100%</div>
+                <div class="stat-label">Free to Play</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number gradient-text">Mobile & Web </div>
+                <div class="stat-label">Play Anywhere</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number gradient-text">24/7</div>
+                <div class="stat-label">Available</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <div class="container">
+        <div class="cta-content glass">
+            <h2 class="neon-text">Ready to Play?</h2>
+            <p>Join our community and start gaming today!</p>
+            {% if not session.get('loggedin') %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg glow">Create Account</a>
+            {% else %}
+                <a href="{{ url_for('games.index') }}" class="btn btn-primary btn-lg glow">Browse Games</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

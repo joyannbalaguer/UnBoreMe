@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Email - GameHub{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box glass animate-fade-in">
+        <div class="auth-header">
+            <h2 class="neon-text">Verify Your Email</h2>
+            <p>We've sent a verification code to <strong>{{ email }}</strong></p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.verify_email') }}" class="auth-form">
+            <div class="form-group">
+                <label for="token">Verification Code</label>
+                <input 
+                    type="text" 
+                    id="token" 
+                    name="token" 
+                    class="form-control glass text-center" 
+                    placeholder="Enter the code from your email"
+                    required
+                    autocomplete="off"
+                    style="font-size: 1.2rem; letter-spacing: 0.3rem;"
+                >
+                <small>Code expires in 10 minutes</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block glow">
+                Verify Email
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Didn't receive the code?</p>
+            <button 
+                id="resendBtn" 
+                class="btn btn-secondary btn-sm"
+                onclick="resendOTP('{{ email }}')"
+            >
+                Resend Code
+            </button>
+            <p id="cooldownMessage" class="text-muted" style="display: none; margin-top: 10px;"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+let cooldownTimer = null;
+
+function resendOTP(email) {
+    const btn = document.getElementById('resendBtn');
+    const cooldownMsg = document.getElementById('cooldownMessage');
+    
+    // Disable button
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    
+    // Send AJAX request
+    fetch('{{ url_for("auth.resend_otp") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'email=' + encodeURIComponent(email)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showAlert('success', data.message || 'Verification code sent successfully!');
+            
+            // Start cooldown (5 minutes = 300 seconds)
+            startCooldown(300);
+        } else {
+            // Show error message
+            showAlert('danger', data.message || 'Failed to send verification code');
+            
+            // If there's a cooldown, start the timer
+            if (data.cooldown) {
+                startCooldown(data.cooldown);
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Resend Code';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Resend Code';
+    });
+}
+
+function startCooldown(seconds) {
+    const btn = document.getElementById('resendBtn');
+    const cooldownMsg = document.getElementById('cooldownMessage');
+    
+    let remaining = seconds;
+    btn.disabled = true;
+    cooldownMsg.style.display = 'block';
+    
+    // Clear existing timer
+    if (cooldownTimer) {
+        clearInterval(cooldownTimer);
+    }
+    
+    cooldownTimer = setInterval(() => {
+        remaining--;
+        
+        const minutes = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        
+        cooldownMsg.textContent = `You can resend in ${minutes}:${secs.toString().padStart(2, '0')}`;
+        btn.textContent = `Resend Code (${minutes}:${secs.toString().padStart(2, '0')})`;
+        
+        if (remaining <= 0) {
+            clearInterval(cooldownTimer);
+            btn.disabled = false;
+            btn.textContent = 'Resend Code';
+            cooldownMsg.style.display = 'none';
+        }
+    }, 1000);
+}
+
+function showAlert(type, message) {
+    const flashContainer = document.querySelector('.flash-container') || createFlashContainer();
+    
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} glass animate-slide-down`;
+    alert.innerHTML = `
+        <span class="alert-icon">${type === 'success' ? '✓' : '✗'}</span>
+        ${message}
+        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        alert.remove();
+    }, 5000);
+}
+
+function createFlashContainer() {
+    const container = document.createElement('div');
+    container.className = 'flash-container';
+    document.body.insertBefore(container, document.querySelector('.main-content'));
+    return container;
+}
+</script>
+{% endblock %}

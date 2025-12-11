@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Login - UnBoreMe{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box glass animate-fade-in">
+        <div class="auth-header">
+            <h2 class="neon-text">Welcome Back</h2>
+            <p>Login to access your gaming account</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-control glass" 
+                    placeholder="Enter your username"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-control glass" 
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('auth.forgot_password') }}" class="link-secondary">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block glow">
+                Login
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{{ url_for('auth.register') }}" class="link-primary">Register here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

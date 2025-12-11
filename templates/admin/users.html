@@ -1,0 +1,162 @@
+{# app/templates/admin/user.html #}
+{% extends "base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+
+<style>
+.actions-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    min-width: 90px;
+    justify-content: center;
+}
+.edit-btn { background:#ffb423; color:#000; }
+.delete-btn { background:#ff2e2e; color:#fff; }
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+.status-active { background:#16a34a; color:white; }
+.status-inactive { background:#eab308; color:white; }
+.status-badge-link { cursor:pointer; text-decoration:none; color:inherit; }
+
+@media(max-width:900px){
+    .actions-column { flex-direction:row; justify-content:center; }
+}
+.table-actions {
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+    align-items:center;
+}
+</style>
+
+<div class="container mt-4">
+
+    <h1 class="display-5"><i class="fas fa-users"></i> Manage Users</h1>
+    <p class="lead">View and manage all registered users</p>
+
+    <div class="mb-3">
+        <a href="{{ url_for('admin.create_user') }}" class="btn btn-success">
+            <i class="fas fa-user-plus"></i> Create New User
+        </a>
+        <a href="{{ url_for('admin.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5><i class="fas fa-list"></i> All Users</h5>
+        </div>
+
+        <div class="card-body">
+
+            {% if users %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th style="width:220px; text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.firstname }} {{ user.lastname }}</td>
+
+                            <td>
+                                {% if user.role == 'admin' %}
+                                    <span class="badge bg-danger">Admin</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">User</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if user.is_active %}
+                                    {# direct link to deactivate endpoint (no JS modal) #}
+                                    <a class="status-badge-link" href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" title="Click to deactivate">
+                                        <span class="status-badge status-active">Active</span>
+                                    </a>
+                                {% else %}
+                                    {# direct link to activate endpoint (no JS modal) #}
+                                    <a class="status-badge-link" href="{{ url_for('admin.activate_user', user_id=user.id) }}" title="Click to activate">
+                                        <span class="status-badge status-inactive">Inactive</span>
+                                    </a>
+                                {% endif %}
+                            </td>
+
+                            <td><small>{{ user.created_at|date }}</small></td>
+
+                            <td class="actions-column">
+                                <div class="table-actions" style="width:100%; justify-content:flex-end;">
+
+                                    <a href="{{ url_for('admin.view_user', user_id=user.id) }}"
+                                       class="action-btn edit-btn" title="View">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+
+                                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}"
+                                       class="action-btn edit-btn" title="Edit">
+                                       <i class="fas fa-edit"></i> Edit
+                                    </a>
+
+                                    {% if user.id != session.user_id %}
+                                    {# plain POST form for delete (no modal). Button submits POST to delete route #}
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display:inline;">
+                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this user?');">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button class="action-btn delete-btn" disabled title="Cannot delete yourself">
+                                        <i class="fas fa-ban"></i> Can't Delete Self
+                                    </button>
+                                    {% endif %}
+
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted">No users found</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Games - GameHub{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4"><i class="fas fa-gamepad"></i> Available Games</h1>
+            
+            {% if games %}
+                <div class="row">
+                    {% for game in games %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card game-card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-dice"></i> {{ game.name }}
+                                    </h5>
+                                    <p class="card-text">{{ game.description }}</p>
+                                    <a href="{{ url_for('games.play_game', slug=game.slug) }}" class="btn btn-primary btn-block">
+                                        <i class="fas fa-play"></i> Play Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No games available at the moment. Please check back later!
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .game-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-radius: 10px;
+    }
+    
+    .game-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+    }
+    
+    .game-card .card-title {
+        color: #007bff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

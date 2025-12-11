@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post - GameHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container glass animate-fade-in">
+        <div class="form-header">
+            <h1 class="neon-text">Edit Post</h1>
+            <p>Update your gaming thoughts</p>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('blog.edit_post', post_id=post.id) }}" class="form">
+            <div class="form-group">
+                <label for="title">Post Title</label>
+                <input type="text" id="title" name="title" class="form-control" 
+                       value="{{ post.title }}" required maxlength="200">
+            </div>
+
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea id="content" name="content" class="form-control" 
+                          rows="15" required>{{ post.content }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary glow">
+                    <span>💾</span> Save Changes
+                </button>
+                <a href="{{ url_for('blog.view_post', post_id=post.id) }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ url_for('blog.my_posts') }}" class="btn btn-secondary">My Posts</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

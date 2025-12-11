@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4"><i class="fas fa-crown"></i> Admin Dashboard</h1>
+            <p class="lead">Manage users, games, and system settings</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Users</h6>
+                            <h2 class="card-title mb-0">{{ total_users }}</h2>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Active Users</h6>
+                            <h2 class="card-title mb-0">{{ active_users }}</h2>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-user-check fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Games</h6>
+                            <h2 class="card-title mb-0">{{ total_games }}</h2>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-gamepad fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-primary btn-lg me-2 mb-2">
+                        <i class="fas fa-users"></i> Manage Users
+                    </a>
+                    <a href="{{ url_for('admin.create_user') }}" class="btn btn-success btn-lg me-2 mb-2">
+                        <i class="fas fa-user-plus"></i> Create User
+                    </a>
+                    <a href="{{ url_for('admin.games') }}" class="btn btn-info btn-lg me-2 mb-2">
+                        <i class="fas fa-gamepad"></i> Manage Games
+                    </a>
+                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-warning btn-lg mb-2">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Admin</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td><strong>{{ log.admin_username }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">{{ log.action }}</span>
+                                    </td>
+                                    <td>{{ log.details or '-' }}</td>
+                                    <td><small>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-primary">
+                            View All Logs <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

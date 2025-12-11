@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Register - UnBoreMe{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box glass animate-fade-in">
+        <div class="auth-header">
+            <h2 class="neon-text">Join UnBoreMe</h2>
+            <p>Create your account and start gaming</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstname">First Name <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="firstname" 
+                        name="firstname" 
+                        class="form-control glass" 
+                        placeholder="First name"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="middlename">Middle Name</label>
+                    <input 
+                        type="text" 
+                        id="middlename" 
+                        name="middlename" 
+                        class="form-control glass" 
+                        placeholder="Middle name (optional)"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="lastname">Last Name <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="lastname" 
+                    name="lastname" 
+                    class="form-control glass" 
+                    placeholder="Last name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-control glass" 
+                    placeholder="Choose a username (min 3 characters)"
+                    required
+                    pattern="[a-zA-Z0-9_]+"
+                    minlength="3"
+                    autocomplete="username"
+                >
+                <small>Only letters, numbers, and underscores allowed</small>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email <span class="required">*</span></label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-control glass" 
+                    placeholder="your.email@example.com"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="birthday">Birthday</label>
+                <input 
+                    type="date" 
+                    id="birthday" 
+                    name="birthday" 
+                    class="form-control glass"
+                    max="{{ (now().year - 13) }}-12-31"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="contact">Contact Number</label>
+                <input 
+                    type="tel" 
+                    id="contact" 
+                    name="contact" 
+                    class="form-control glass" 
+                    placeholder="+63 912 345 6789"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password <span class="required">*</span></label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-control glass" 
+                    placeholder="Choose a strong password"
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                >
+                <small>Minimum 8 characters</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password <span class="required">*</span></label>
+                <input 
+                    type="password" 
+                    id="confirm_password" 
+                    name="confirm_password" 
+                    class="form-control glass" 
+                    placeholder="Re-enter your password"
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block glow">
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{{ url_for('auth.login') }}" class="link-primary">Login here</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Password confirmation validation
+    document.getElementById('confirm_password').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        
+        if (password !== confirmPassword) {
+            this.setCustomValidity('Passwords do not match');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
+{% endblock %}

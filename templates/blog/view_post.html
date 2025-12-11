@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - GameHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="post-detail-container">
+        <div class="post-detail glass animate-fade-in">
+            <div class="post-header">
+                <div class="post-meta">
+                    <div class="post-author-info">
+                        <span class="author-icon">👤</span>
+                        <div>
+                            <h4>{{ post.firstname }} {{ post.lastname }}</h4>
+                            <span class="post-date">{{ post.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                        </div>
+                    </div>
+                    {% if session.get('loggedin') and session.get('id') == post.user_id %}
+                        <div class="post-actions">
+                            <a href="{{ url_for('blog.edit_post', post_id=post.id) }}" class="btn btn-sm btn-warning">
+                                <span>✏️</span> Edit
+                            </a>
+                            <form method="POST" action="{{ url_for('blog.delete_post', post_id=post.id) }}" 
+                                  style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <span>🗑️</span> Delete
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h1 class="neon-text">{{ post.title }}</h1>
+            </div>
+
+            <div class="post-content">
+                <p>{{ post.content|replace('\n', '<br>')|safe }}</p>
+            </div>
+
+            <div class="post-footer">
+                {% if post.updated_at and post.updated_at != post.created_at %}
+                    <span class="post-updated">Last updated: {{ post.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="post-navigation">
+            <a href="{{ url_for('blog.my_posts') }}" class="btn btn-secondary">
+                <span>←</span> Back to All Posts
+            </a>
+            {% if session.get('loggedin') %}
+                <a href="{{ url_for('blog.my_posts') }}" class="btn btn-secondary">
+                    <span>📝</span> My Posts
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
