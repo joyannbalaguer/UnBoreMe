@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - GameHub{% endblock %}
+{% block title %}Dashboard - UnBoreMe{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
@@ -29,28 +29,33 @@
                 </div>
             </div>
 
-            <!-- Quick Stats -->
-            <div class="dashboard-card glass">
-                <div class="card-header">
-                    <h3>📊 Quick Stats</h3>
+            <!-- User Game Stats -->
+<div class="dashboard-card glass">
+    <div class="card-header">
+        <h3>🎮 Your Game Stats</h3>
+    </div>
+    <div class="card-body">
+        <div class="stats-list">
+
+            {% if game_stats %}
+                {% for stat in game_stats %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ stat.game_name }}:</span>
+                    <span class="stat-value gradient-text">
+                        Score: {{ stat.last_score }} |
+                        High Score: {{ stat.high_score }} |
+                        Plays: {{ stat.total_plays }}
+                    </span>
                 </div>
-                <div class="card-body">
-                    <div class="stats-list">
-                        <div class="stat-item">
-                            <span class="stat-label">Games Available:</span>
-                            <span class="stat-value gradient-text">{{ games_count }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Your Posts:</span>
-                            <span class="stat-value gradient-text">{{ posts_count }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Account Status:</span>
-                            <span class="badge badge-success">Active</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No game stats available yet.</p>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
 
             <!-- Quick Actions -->
             <div class="dashboard-card glass">

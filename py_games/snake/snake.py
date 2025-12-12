@@ -1,6 +1,7 @@
 """
-Snake Game - Pygame Version
-Classic snake game with food
+Snake Game - Pygame Version (OOP Enhanced)
+Classic snake game using all 4 OOP pillars:
+Encapsulation, Abstraction, Inheritance, Polymorphism
 """
 
 import pygame
@@ -32,12 +33,31 @@ DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 
-class Snake:
+
+# ==========================================================
+# OOP PILLAR #3: INHERITANCE + ABSTRACTION
+# Base class for all drawable game objects
+# ==========================================================
+class GameObject:
+    def draw(self, screen):
+        raise NotImplementedError("Subclasses must implement draw()")
+
+    def update(self):
+        pass  # optional override for objects that move
+
+
+# ==========================================================
+# Snake Class (inherits GameObject)
+# ==========================================================
+class Snake(GameObject):
     def __init__(self, x, y):
         self.body = []
-        # Build initial body of length 4
-        for i in range(4):
-            self.body.append((x - i, y))
+        initial_length = 4
+
+        # Build initial snake from left → right, prevents instant self-collision
+        for i in range(initial_length):
+            self.body.append((x + i, y))
+
         self.direction = RIGHT
         self.next_direction = RIGHT
         self.grow_amount = 0
@@ -47,12 +67,16 @@ class Snake:
         return self.body[-1]
     
     def set_direction(self, direction):
-        # Prevent immediate reversal
+        # Prevent reversing into itself
         if len(self.body) > 1:
             if direction[0] == -self.direction[0] and direction[1] == -self.direction[1]:
                 return
         self.next_direction = direction
     
+    # OOP PILLAR #2: ABSTRACTION via update()
+    def update(self):
+        self.move()
+
     def move(self):
         if not self.alive:
             return
@@ -62,7 +86,7 @@ class Snake:
         nx = hx + self.direction[0]
         ny = hy + self.direction[1]
         
-        # Check wall collision
+        # Wall collision
         if nx < 0 or nx >= COLS or ny < 0 or ny >= ROWS:
             self.alive = False
             return
@@ -80,21 +104,25 @@ class Snake:
     def check_self_collision(self):
         head = self.head()
         return self.body.count(head) > 1
-    
+
+    # OOP PILLAR #4: POLYMORPHISM (override draw)
     def draw(self, screen):
         for i, (x, y) in enumerate(self.body):
-            pygame.draw.rect(screen, SNAKE_COLOR, 
-                           (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            # Draw head with border
+            pygame.draw.rect(screen, SNAKE_COLOR,
+                             (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             if i == len(self.body) - 1:
                 pygame.draw.rect(screen, TEXT_COLOR,
-                               (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE), 1)
+                                 (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE), 1)
 
-class Food:
+
+# ==========================================================
+# Food Class (inherits GameObject)
+# ==========================================================
+class Food(GameObject):
     def __init__(self):
         self.position = None
         self.spawn()
-    
+
     def spawn(self, snake=None):
         while True:
             x = random.randint(0, COLS - 1)
@@ -102,14 +130,19 @@ class Food:
             if snake is None or (x, y) not in snake.body:
                 self.position = (x, y)
                 break
-    
+
+    # polymorphic draw()
     def draw(self, screen):
         if self.position:
             x, y = self.position
             pygame.draw.rect(screen, FOOD_COLOR,
-                           (x * CELL_SIZE + 1, y * CELL_SIZE + 1, 
-                            CELL_SIZE - 2, CELL_SIZE - 2))
+                             (x * CELL_SIZE + 1, y * CELL_SIZE + 1,
+                              CELL_SIZE - 2, CELL_SIZE - 2))
 
+
+# ==========================================================
+# Main Game Class (Encapsulation of entire game)
+# ==========================================================
 class SnakeGame:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -121,7 +154,7 @@ class SnakeGame:
         self.score = 0
         self.best_score = self.load_best_score()
         
-        # Game objects
+        # Objects
         self.snake = None
         self.food = None
         
@@ -130,19 +163,17 @@ class SnakeGame:
         self.title_font = pygame.font.Font(None, 64)
         self.instruction_font = pygame.font.Font(None, 28)
     
+    # Score persistence
     def load_best_score(self):
-        """Load best score from file"""
         try:
             if os.path.exists('.pygame_snake_best.json'):
                 with open('.pygame_snake_best.json', 'r') as f:
-                    data = json.load(f)
-                    return data.get('best_score', 0)
+                    return json.load(f).get('best_score', 0)
         except:
             pass
         return 0
     
     def save_best_score(self):
-        """Save best score to file"""
         try:
             with open('.pygame_snake_best.json', 'w') as f:
                 json.dump({'best_score': self.best_score}, f)
@@ -152,7 +183,7 @@ class SnakeGame:
     def start(self):
         self.game_running = True
         self.score = 0
-        start_x = COLS // 4
+        start_x = COLS // 2
         start_y = ROWS // 2
         self.snake = Snake(start_x, start_y)
         self.food = Food()
@@ -166,17 +197,15 @@ class SnakeGame:
             self.game_over()
             return
         
-        # Move snake
-        self.snake.move()
+        self.snake.update()
         
-        # Check self collision
         if self.snake.check_self_collision():
             self.snake.alive = False
             self.game_over()
             return
         
-        # Check food collision
-        if self.snake.alive and self.snake.head() == self.food.position:
+        # Food collision
+        if self.snake.head() == self.food.position:
             self.snake.grow()
             self.score += 10
             self.food.spawn(self.snake)
@@ -187,88 +216,72 @@ class SnakeGame:
             self.best_score = self.score
             self.save_best_score()
     
+    # --- Drawing ---
     def draw_start_screen(self):
         self.screen.fill(BACKGROUND_COLOR)
         
-        # Title
         title = self.title_font.render('SNAKE', True, TEXT_COLOR)
         title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 100))
         self.screen.blit(title, title_rect)
         
-        # Instructions
         instructions = [
             'Use Arrow Keys or WASD to move',
             'Eat food to grow longer',
-            "Don't hit the walls or yourself!",
+            "Don\'t hit the walls or yourself!",
             '',
             'Press SPACE to Start'
         ]
         
-        y_offset = WINDOW_HEIGHT // 2
-        for instruction in instructions:
-            if instruction:
-                text = self.instruction_font.render(instruction, True, TEXT_COLOR)
-                text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, y_offset))
-                self.screen.blit(text, text_rect)
-            y_offset += 35
+        y = WINDOW_HEIGHT // 2
+        for line in instructions:
+            if line:
+                text = self.instruction_font.render(line, True, TEXT_COLOR)
+                rect = text.get_rect(center=(WINDOW_WIDTH // 2, y))
+                self.screen.blit(text, rect)
+            y += 35
         
-        # Best score
-        best_text = self.instruction_font.render(f'Best: {self.best_score}', True, FOOD_COLOR)
-        best_rect = best_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 50))
-        self.screen.blit(best_text, best_rect)
+        best = self.instruction_font.render(f'Best: {self.best_score}', True, FOOD_COLOR)
+        best_rect = best.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 50))
+        self.screen.blit(best, best_rect)
     
     def draw_game(self):
         self.screen.fill(BACKGROUND_COLOR)
         
-        # Draw food
         self.food.draw(self.screen)
-        
-        # Draw snake
         self.snake.draw(self.screen)
         
-        # Draw score
-        score_text = self.score_font.render(f'Score: {self.score}', True, TEXT_COLOR)
-        self.screen.blit(score_text, (10, 10))
-        
-        best_text = self.score_font.render(f'Best: {self.best_score}', True, TEXT_COLOR)
-        best_rect = best_text.get_rect(topright=(WINDOW_WIDTH - 10, 10))
-        self.screen.blit(best_text, best_rect)
+        score = self.score_font.render(f'Score: {self.score}', True, TEXT_COLOR)
+        self.screen.blit(score, (10, 10))
+
+        best = self.score_font.render(f'Best: {self.best_score}', True, TEXT_COLOR)
+        best_rect = best.get_rect(topright=(WINDOW_WIDTH - 10, 10))
+        self.screen.blit(best, best_rect)
     
     def draw_game_over(self):
-        # Semi-transparent overlay
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
         overlay.set_alpha(180)
         overlay.fill((0, 0, 0))
         self.screen.blit(overlay, (0, 0))
         
-        # Game over text
-        game_over_text = self.title_font.render('GAME OVER', True, TEXT_COLOR)
-        game_over_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50))
-        self.screen.blit(game_over_text, game_over_rect)
+        go = self.title_font.render('GAME OVER', True, TEXT_COLOR)
+        go_rect = go.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50))
+        self.screen.blit(go, go_rect)
         
-        # Score
-        score_text = self.instruction_font.render(f'Score: {self.score}', True, TEXT_COLOR)
-        score_rect = score_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
-        self.screen.blit(score_text, score_rect)
+        score = self.instruction_font.render(f'Score: {self.score}', True, TEXT_COLOR)
+        score_rect = score.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
+        self.screen.blit(score, score_rect)
         
-        # Best
-        if self.score == self.best_score and self.score > 0:
-            new_best = self.instruction_font.render('NEW BEST!', True, FOOD_COLOR)
-            new_best_rect = new_best.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
-            self.screen.blit(new_best, new_best_rect)
-        else:
-            best_text = self.instruction_font.render(f'Best: {self.best_score}', True, TEXT_COLOR)
-            best_rect = best_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
-            self.screen.blit(best_text, best_rect)
+        best = self.instruction_font.render(f'Best: {self.best_score}', True, FOOD_COLOR)
+        best_rect = best.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
+        self.screen.blit(best, best_rect)
         
-        # Restart
-        restart_text = self.instruction_font.render('Press SPACE to Restart', True, TEXT_COLOR)
-        restart_rect = restart_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 100))
-        self.screen.blit(restart_text, restart_rect)
+        restart = self.instruction_font.render('Press SPACE to Restart', True, TEXT_COLOR)
+        restart_rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 100))
+        self.screen.blit(restart, restart_rect)
     
     def handle_input(self, event):
         if event.type == pygame.KEYDOWN:
-            if self.game_running and self.snake and self.snake.alive:
+            if self.game_running and self.snake.alive:
                 if event.key in (pygame.K_UP, pygame.K_w):
                     self.snake.set_direction(UP)
                 elif event.key in (pygame.K_DOWN, pygame.K_s):
@@ -298,7 +311,6 @@ class SnakeGame:
             
             if not self.game_running:
                 if self.snake and not self.snake.alive:
-                    # Draw game then overlay
                     self.draw_game()
                     self.draw_game_over()
                 else:
@@ -312,6 +324,6 @@ class SnakeGame:
         pygame.quit()
         sys.exit()
 
+
 if __name__ == '__main__':
-    game = SnakeGame()
-    game.run()
+    SnakeGame().run()

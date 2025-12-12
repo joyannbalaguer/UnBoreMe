@@ -28,15 +28,13 @@
 
             {% if not viewing_self %}
                 {% if user.is_active %}
-                <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" 
-                   class="btn btn-secondary"
-                   onclick="return confirm('Deactivate this user?')">
+                <button type="button" class="btn btn-secondary action-deactivate" data-user-id="{{ user.id }}">
                     <i class="fas fa-ban"></i> Deactivate
-                </a>
+                </button>
                 {% else %}
-                <a href="{{ url_for('admin.activate_user', user_id=user.id) }}" class="btn btn-success">
+                <button type="button" class="btn btn-success action-activate" data-user-id="{{ user.id }}">
                     <i class="fas fa-check"></i> Activate
-                </a>
+                </button>
                 {% endif %}
             {% endif %}
         </div>
@@ -144,21 +142,33 @@
                                 <strong>{{ game.name }}</strong><br>
                                 <small class="text-muted">{{ game.description }}</small>
                             </div>
-                            <div>
+
+                            <div class="d-flex align-items-center gap-2">
                                 {% if game.is_enabled %}
-                                <span class="badge bg-success me-2">Enabled</span>
-                                <form method="POST" action="{{ url_for('admin.toggle_game', user_id=user.id, game_id=game.id) }}" style="display:inline;">
-                                    <input type="hidden" name="action" value="disable">
-                                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-ban"></i></button>
-                                </form>
+                                <span class="badge bg-success">Enabled</span>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger toggle-game-btn"
+                                        data-action="disable"
+                                        data-user-id="{{ user.id }}"
+                                        data-game-id="{{ game.id }}"
+                                        data-game-name="{{ game.name }}"
+                                        title="Disable game">
+                                    <i class="fas fa-ban"></i>
+                                </button>
                                 {% else %}
-                                <span class="badge bg-secondary me-2">Disabled</span>
-                                <form method="POST" action="{{ url_for('admin.toggle_game', user_id=user.id, game_id=game.id) }}" style="display:inline;">
-                                    <input type="hidden" name="action" value="enable">
-                                    <button class="btn btn-sm btn-outline-success"><i class="fas fa-check"></i></button>
-                                </form>
+                                <span class="badge bg-secondary">Disabled</span>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-success toggle-game-btn"
+                                        data-action="enable"
+                                        data-user-id="{{ user.id }}"
+                                        data-game-id="{{ game.id }}"
+                                        data-game-name="{{ game.name }}"
+                                        title="Enable game">
+                                    <i class="fas fa-check"></i>
+                                </button>
                                 {% endif %}
                             </div>
+
                         </li>
                         {% endfor %}
                     </ul>
@@ -208,4 +218,144 @@
     {% endif %}
 
 </div>
+
+{# ---------- SweetAlert + toggle handler ---------- #}
+<script>
+/* Load SweetAlert2 only if not already loaded */
+(function ensureSwal() {
+  if (typeof Swal !== 'undefined') return;
+  const s = document.createElement('script');
+  s.src = "https://cdn.jsdelivr.net/npm/sweetalert2@11";
+  s.defer = true;
+  document.head.appendChild(s);
+})();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // wait until Swal is available
+  function waitForSwal(cb) {
+    if (typeof Swal !== 'undefined') return cb();
+    const t = setInterval(function () {
+      if (typeof Swal !== 'undefined') {
+        clearInterval(t);
+        cb();
+      }
+    }, 50);
+  }
+
+  waitForSwal(function () {
+    // Deactivate button
+    document.querySelectorAll('.action-deactivate').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const uid = this.dataset.userId;
+        Swal.fire({
+          title: 'Deactivate user?',
+          text: 'This will prevent the user from logging in.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, deactivate',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#d9534f',
+          cancelButtonColor: '#6c757d',
+          background: '#12121a',
+          color: '#ffffff',
+          customClass: { popup: 'swal2-popup-dark' }
+        }).then(result => {
+          if (result.isConfirmed) {
+            // use a small form so server-side route handles it (same as your previous href)
+            const f = document.createElement('form');
+            f.method = 'GET';
+            f.action = "{{ url_for('admin.deactivate_user', user_id=0) }}".replace('/0', '/' + encodeURIComponent(uid));
+            document.body.appendChild(f);
+            f.submit();
+          }
+        });
+      });
+    });
+
+    // Activate button
+    document.querySelectorAll('.action-activate').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const uid = this.dataset.userId;
+        Swal.fire({
+          title: 'Activate user?',
+          text: 'This will allow the user to log in again.',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, activate',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#198754',
+          cancelButtonColor: '#6c757d',
+          background: '#12121a',
+          color: '#ffffff',
+          customClass: { popup: 'swal2-popup-dark' }
+        }).then(result => {
+          if (result.isConfirmed) {
+            const f = document.createElement('form');
+            f.method = 'GET';
+            f.action = "{{ url_for('admin.activate_user', user_id=0) }}".replace('/0', '/' + encodeURIComponent(uid));
+            document.body.appendChild(f);
+            f.submit();
+          }
+        });
+      });
+    });
+
+    // Toggle game enable/disable buttons (delegation)
+    document.querySelectorAll('.toggle-game-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const action = this.dataset.action; // enable / disable
+        const uid = this.dataset.userId;
+        const gid = this.dataset.gameId;
+        const gname = this.dataset.gameName || 'this game';
+
+        const title = (action === 'disable') ? 'Disable game?' : 'Enable game?';
+        const text = (action === 'disable')
+          ? `Disable "${gname}" for this user?`
+          : `Enable "${gname}" for this user?`;
+
+        Swal.fire({
+          title: title,
+          text: text,
+          icon: action === 'disable' ? 'warning' : 'question',
+          showCancelButton: true,
+          confirmButtonText: action === 'disable' ? 'Yes, disable' : 'Yes, enable',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: action === 'disable' ? '#d9534f' : '#198754',
+          cancelButtonColor: '#6c757d',
+          background: '#12121a',
+          color: '#fff',
+          customClass: { popup: 'swal2-popup-dark' }
+        }).then(result => {
+          if (!result.isConfirmed) return;
+
+          // build and submit POST form identical to your prior form
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = "{{ url_for('admin.toggle_game', user_id=0, game_id=0) }}"
+                        .replace('/0/0', '/' + encodeURIComponent(uid) + '/' + encodeURIComponent(gid));
+
+          const hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'action';
+          hidden.value = action;
+          form.appendChild(hidden);
+
+          document.body.appendChild(form);
+          form.submit();
+        });
+      });
+    });
+
+  }); // end waitForSwal
+});
+</script>
+
+<style>
+/* dark SweetAlert styling + ensure it sits above everything */
+.swal2-container { z-index: 99999 !important; }
+.swal2-popup-dark { background: #12121a !important; color: #e9eef6 !important; }
+</style>
+
 {% endblock %}

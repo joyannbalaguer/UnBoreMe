@@ -1,3 +1,4 @@
+{# app/templates/admin/audit_logs.html #}
 {% extends "base.html" %}
 
 {% block title %}Audit Logs{% endblock %}
@@ -12,10 +13,17 @@
     </div>
 
     <div class="row mb-3">
-        <div class="col-md-12">
+        <div class="col-md-12 d-flex gap-2 align-items-center">
             <a href="{{ url_for('admin.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
+
+            {# Search controls (client-side) #}
+            <div id="searchControls" class="ms-3 d-flex align-items-center" style="gap:10px;">
+                <input id="auditSearch" type="text" class="form-control" style="max-width:420px;" placeholder="Search logs... (id, admin, action, details, 2025-12-07)">
+                <button id="searchClear" class="btn btn-outline-light" title="Clear search" aria-label="Clear search">✕</button>
+                <div id="searchCount" class="text-muted small" aria-live="polite"></div>
+            </div>
         </div>
     </div>
 
@@ -26,23 +34,24 @@
                     <h5 class="mb-0"><i class="fas fa-list"></i> Recent Activity Log</h5>
                 </div>
                 <div class="card-body">
+
                     {% if logs %}
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped">
+                        <table class="table table-hover table-striped" id="auditTable">
                             <thead>
                                 <tr>
-                                    <th width="5%">ID</th>
-                                    <th width="15%">Admin</th>
-                                    <th width="15%">Action</th>
-                                    <th width="40%">Details</th>
-                                    <th width="25%">Timestamp</th>
+                                    <th style="width:6%;">ID</th>
+                                    <th style="width:16%;">Admin</th>
+                                    <th style="width:14%;">Action</th>
+                                    <th style="width:44%;">Details</th>
+                                    <th style="width:20%;">Timestamp</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for log in logs %}
                                 <tr>
                                     <td>{{ log.id }}</td>
-                                    <td><strong>{{ log.admin_username }}</strong></td>
+                                    <td><strong title="{{ log.admin_username }}">{{ log.admin_username }}</strong></td>
                                     <td>
                                         {% if 'CREATE' in log.action %}
                                         <span class="badge bg-success">{{ log.action }}</span>
@@ -58,11 +67,15 @@
                                         <span class="badge bg-info">{{ log.action }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ log.details or '-' }}</td>
+                                    <td title="{{ log.details or '-' }}">{{ log.details or '-' }}</td>
                                     <td>
                                         <small>
-                                            <i class="fas fa-clock"></i> 
-                                            {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            <i class="fas fa-clock"></i>
+                                            {% if log.created_at is string %}
+                                                {{ log.created_at }}
+                                            {% else %}
+                                                {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            {% endif %}
                                         </small>
                                     </td>
                                 </tr>
@@ -87,8 +100,8 @@
             <div class="alert alert-info">
                 <h5><i class="fas fa-info-circle"></i> About Audit Logs</h5>
                 <p class="mb-0">
-                    Audit logs track all administrative actions including user creation, updates, deletions, 
-                    account activations/deactivations, and game access changes. These logs help maintain 
+                    Audit logs track all administrative actions including user creation, updates, deletions,
+                    account activations/deactivations, and game access changes. These logs help maintain
                     system security and accountability.
                 </p>
             </div>
@@ -96,4 +109,72 @@
     </div>
     {% endif %}
 </div>
+
+{# Client-side search script and light styles - paste once; safe to include here #}
+<style>
+/* table sizing + truncation */
+.table { width:100%; table-layout: fixed; }
+.table thead th { white-space: nowrap; }
+.table td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* small responsive tweak */
+.table-responsive { overflow-x:auto; }
+/* search control styles */
+#searchCount { color: #cbd5e1; }
+#searchClear { min-width:40px; padding:4px 8px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('auditSearch');
+    const clearBtn = document.getElementById('searchClear');
+    const countEl = document.getElementById('searchCount');
+    const rows = Array.from(document.querySelectorAll('#auditTable tbody tr'));
+    const total = rows.length;
+
+    function normalize(s) { return (s || '').toString().toLowerCase(); }
+    function updateCount(visible) { if (countEl) countEl.textContent = `Showing ${visible} of ${total}`; }
+
+    function rowMatchesQuery(row, q) {
+        if (!q) return true;
+        const text = normalize(row.innerText);
+
+        // if query is date-like YYYY-MM-DD, check exact date substring
+        if (/^\d{4}-\d{2}-\d{2}$/.test(q)) {
+            return text.includes(q);
+        }
+
+        // if query looks like an action constant (letters, numbers, underscore), match action/details/admin
+        // fallback: substring match across row text
+        return text.includes(q);
+    }
+
+    function runFilter() {
+        const q = normalize(searchInput.value.trim());
+        let visible = 0;
+        rows.forEach(r => {
+            const show = rowMatchesQuery(r, q);
+            r.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        updateCount(visible);
+    }
+
+    if (searchInput) {
+        updateCount(total);
+        searchInput.addEventListener('input', runFilter);
+        searchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+    }
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            if (searchInput) {
+                searchInput.value = '';
+                runFilter();
+                searchInput.focus();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

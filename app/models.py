@@ -246,40 +246,50 @@ class Game:
 
 class UserGame:
     """UserGame model - manages user access to games"""
-    
+
     @staticmethod
     def enable_game(user_id, game_id):
-        """Enable game for user"""
-        # Check if record exists
-        check_query = "SELECT id FROM user_games WHERE user_id = %s AND game_id = %s"
-        existing = get_one(check_query, (user_id, game_id))
-        
-        if existing:
-            # Update existing
-            query = "UPDATE user_games SET enabled = 1 WHERE user_id = %s AND game_id = %s"
-            return update(query, (user_id, game_id))
-        else:
-            # Insert new
-            query = "INSERT INTO user_games (user_id, game_id, enabled) VALUES (%s, %s, 1)"
-            return insert(query, (user_id, game_id))
-    
+        """Enable game for user (insert or update)."""
+        query = """
+            INSERT INTO user_games (user_id, game_id, enabled)
+            VALUES (%s, %s, 1)
+            ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)
+        """
+        try:
+            insert(query, (user_id, game_id))
+            return True
+        except Exception as e:
+            # Replace print with your logger if available
+            print("enable_game error:", e)
+            return False
+
     @staticmethod
     def disable_game(user_id, game_id):
-        """Disable game for user"""
-        query = "UPDATE user_games SET enabled = 0 WHERE user_id = %s AND game_id = %s"
-        return update(query, (user_id, game_id))
-    
+        """Disable game for user (insert or update)."""
+        query = """
+            INSERT INTO user_games (user_id, game_id, enabled)
+            VALUES (%s, %s, 0)
+            ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)
+        """
+        try:
+            insert(query, (user_id, game_id))
+            return True
+        except Exception as e:
+            print("disable_game error:", e)
+            return False
+
     @staticmethod
     def get_user_games(user_id):
         """Get all games with user's enabled status"""
         query = """
-            SELECT g.*, 
+            SELECT g.*,
                    COALESCE(ug.enabled, g.enabled_by_default) as is_enabled
             FROM games g
             LEFT JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = %s
             ORDER BY g.id
         """
         return get_all(query, (user_id,))
+
     
     @staticmethod
     def is_game_enabled(user_id, game_id):
