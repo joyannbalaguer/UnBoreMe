@@ -1,15 +1,20 @@
 """
 Admin Routes
 Administrative dashboard and user management
+Patched: blueprint declared before heavy imports; relative imports to keep package context;
+expose root endpoint name 'dashboard' so templates using admin.dashboard resolve.
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request
-from app.models import User, Game, UserGame, AuditLog, Post
-from app.utils.decorators import login_required, active_required, admin_required
 
-admin_bp = Blueprint('admin', __name__)
+# Create blueprint immediately so import-time failures later won't prevent it from existing
+admin_bp = Blueprint('admin', __name__, template_folder='templates')
+
+# Use relative imports to reduce circular-import risk (module is inside package 'app')
+from ..models import User, Game, UserGame, AuditLog, Post
+from ..utils.decorators import login_required, active_required, admin_required
 
 
-@admin_bp.route('/')
+@admin_bp.route('/', endpoint='dashboard')
 @login_required
 @active_required
 @admin_required
@@ -17,20 +22,22 @@ def index():
     """Admin dashboard home page"""
     users = User.get_all()
     games = Game.get_all()
-    
+
     # Count statistics
     total_users = len(users) if users else 0
-    active_users = len([u for u in users if u['is_active']]) if users else 0
+    active_users = len([u for u in users if u.get('is_active')]) if users else 0
     total_games = len(games) if games else 0
-    
+
     # Get recent audit logs
     recent_logs = AuditLog.get_recent(10)
-    
-    return render_template('admin/index.html', 
-                         total_users=total_users,
-                         active_users=active_users,
-                         total_games=total_games,
-                         recent_logs=recent_logs)
+
+    return render_template(
+        'admin/index.html',
+        total_users=total_users,
+        active_users=active_users,
+        total_games=total_games,
+        recent_logs=recent_logs
+    )
 
 
 @admin_bp.route('/users')
@@ -53,13 +60,13 @@ def view_user(user_id):
     if not user:
         flash('User not found!', 'danger')
         return redirect(url_for('admin.users'))
-    
+
     # Get user's games
     user_games = UserGame.get_user_games(user_id)
-    
+
     # Get user's posts
     user_posts = Post.get_by_user(user_id)
-    
+
     return render_template('admin/view_user.html', user=user, games=user_games, posts=user_posts)
 
 
@@ -80,26 +87,26 @@ def create_user():
         contact = request.form.get('contact', '').strip()
         role = request.form.get('role', 'user')
         is_active = request.form.get('is_active') == 'on'
-        
+
         # Validation
         if not username or not email or not password or not firstname or not lastname:
             flash('Username, email, password, first name, and last name are required!', 'danger')
             return render_template('admin/create_user.html')
-        
+
         # Check if username exists
         if User.get_by_username(username):
             flash('Username already exists!', 'danger')
             return render_template('admin/create_user.html')
-        
+
         # Check if email exists
         if User.get_by_email(email):
             flash('Email already exists!', 'danger')
             return render_template('admin/create_user.html')
-        
+
         # Create user
-        user_id = User.create(username, email, password, firstname, lastname, 
+        user_id = User.create(username, email, password, firstname, lastname,
                              middlename, birthday, contact, role, is_active)
-        
+
         if user_id:
             # Log action
             AuditLog.log(session['user_id'], 'USER_CREATE', f'Created user: {username}')
@@ -107,7 +114,7 @@ def create_user():
             return redirect(url_for('admin.users'))
         else:
             flash('Failed to create user. Please try again.', 'danger')
-    
+
     return render_template('admin/create_user.html')
 
 
@@ -121,28 +128,28 @@ def edit_user(user_id):
     if not user:
         flash('User not found!', 'danger')
         return redirect(url_for('admin.users'))
-    
+
     if request.method == 'POST':
         firstname = request.form.get('firstname', '').strip()
         middlename = request.form.get('middlename', '').strip()
         lastname = request.form.get('lastname', '').strip()
         birthday = request.form.get('birthday', '').strip()
         contact = request.form.get('contact', '').strip()
-        
+
         # Validation
         if not firstname or not lastname:
             flash('First name and last name are required!', 'danger')
             return render_template('admin/edit_user.html', user=user)
-        
+
         # Update user
         if User.update_profile(user_id, firstname, middlename, lastname, birthday, contact):
             # Log action
-            AuditLog.log(session['user_id'], 'USER_UPDATE', f'Updated user: {user["username"]}')
-            flash(f'User {user["username"]} updated successfully!', 'success')
+            AuditLog.log(session['user_id'], 'USER_UPDATE', f'Updated user: {user.get('username')}')
+            flash(f'User {user.get('username')} updated successfully!', 'success')
             return redirect(url_for('admin.view_user', user_id=user_id))
         else:
             flash('Failed to update user. Please try again.', 'danger')
-    
+
     return render_template('admin/edit_user.html', user=user)
 
 
@@ -156,14 +163,14 @@ def activate_user(user_id):
     if not user:
         flash('User not found!', 'danger')
         return redirect(url_for('admin.users'))
-    
+
     if User.activate(user_id):
         # Log action
-        AuditLog.log(session['user_id'], 'USER_ACTIVATE', f'Activated user: {user["username"]}')
-        flash(f'User {user["username"]} activated successfully!', 'success')
+        AuditLog.log(session['user_id'], 'USER_ACTIVATE', f'Activated user: {user.get('username')}')
+        flash(f'User {user.get('username')} activated successfully!', 'success')
     else:
         flash('Failed to activate user.', 'danger')
-    
+
     return redirect(url_for('admin.users'))
 
 
@@ -177,19 +184,19 @@ def deactivate_user(user_id):
     if not user:
         flash('User not found!', 'danger')
         return redirect(url_for('admin.users'))
-    
+
     # Prevent deactivating self
     if user_id == session['user_id']:
         flash('You cannot deactivate your own account!', 'danger')
         return redirect(url_for('admin.users'))
-    
+
     if User.deactivate(user_id):
         # Log action
-        AuditLog.log(session['user_id'], 'USER_DEACTIVATE', f'Deactivated user: {user["username"]}')
-        flash(f'User {user["username"]} deactivated successfully!', 'success')
+        AuditLog.log(session['user_id'], 'USER_DEACTIVATE', f'Deactivated user: {user.get('username')}')
+        flash(f'User {user.get('username')} deactivated successfully!', 'success')
     else:
         flash('Failed to deactivate user.', 'danger')
-    
+
     return redirect(url_for('admin.users'))
 
 
@@ -203,20 +210,20 @@ def delete_user(user_id):
     if not user:
         flash('User not found!', 'danger')
         return redirect(url_for('admin.users'))
-    
+
     # Prevent deleting self
     if user_id == session['user_id']:
         flash('You cannot delete your own account!', 'danger')
         return redirect(url_for('admin.users'))
-    
-    username = user['username']
+
+    username = user.get('username')
     if User.delete_user(user_id):
         # Log action
         AuditLog.log(session['user_id'], 'USER_DELETE', f'Deleted user: {username}')
         flash(f'User {username} deleted successfully!', 'success')
     else:
         flash('Failed to delete user.', 'danger')
-    
+
     return redirect(url_for('admin.users'))
 
 
@@ -238,28 +245,28 @@ def toggle_game(user_id, game_id):
     """Enable/disable game for user"""
     user = User.get_by_id(user_id)
     game = Game.get_by_id(game_id)
-    
+
     if not user or not game:
         flash('User or game not found!', 'danger')
         return redirect(url_for('admin.users'))
-    
+
     action = request.form.get('action')
-    
+
     if action == 'enable':
         if UserGame.enable_game(user_id, game_id):
-            AuditLog.log(session['user_id'], 'GAME_ENABLE', 
-                        f'Enabled game "{game["name"]}" for user {user["username"]}')
-            flash(f'Game "{game["name"]}" enabled for {user["username"]}!', 'success')
+            AuditLog.log(session['user_id'], 'GAME_ENABLE',
+                        f'Enabled game "{game.get('name')}" for user {user.get('username')}')
+            flash(f'Game "{game.get('name')}" enabled for {user.get('username')}!', 'success')
         else:
             flash('Failed to enable game.', 'danger')
     elif action == 'disable':
         if UserGame.disable_game(user_id, game_id):
-            AuditLog.log(session['user_id'], 'GAME_DISABLE', 
-                        f'Disabled game "{game["name"]}" for user {user["username"]}')
-            flash(f'Game "{game["name"]}" disabled for {user["username"]}!', 'success')
+            AuditLog.log(session['user_id'], 'GAME_DISABLE',
+                        f'Disabled game "{game.get('name')}" for user {user.get('username')}')
+            flash(f'Game "{game.get('name')}" disabled for {user.get('username')}!', 'success')
         else:
             flash('Failed to disable game.', 'danger')
-    
+
     return redirect(url_for('admin.view_user', user_id=user_id))
 
 

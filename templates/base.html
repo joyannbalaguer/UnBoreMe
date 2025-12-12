@@ -31,7 +31,7 @@
             <div class="nav-links">
                 {% if session.get('loggedin') %}
                     {% if session.get('role') == 'admin' %}
-                        <a href="{{ url_for('admin.index') }}" class="nav-link">Admin Dashboard</a>
+                        <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin Dashboard</a>
                         <a href="{{ url_for('admin.users') }}" class="nav-link">Users</a>
                         <a href="{{ url_for('admin.games') }}" class="nav-link">Games</a>
                     {% else %}
