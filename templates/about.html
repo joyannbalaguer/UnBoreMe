@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}About Me - UnBoreMe{% endblock %}
+
+{% block content %}
+<div class="about-section">
+    <div class="container">
+        <div class="about-header animate-fade-in">
+            <h1 class="neon-text">About Me</h1>
+            <p class="text-secondary">Creator of UnBoreMe</p>
+        </div>
+
+        <div class="about-content glass animate-slide-up">
+            <div class="about-portrait">
+                <div class="portrait-wrapper">
+                    <img src="{{ url_for('static', filename='img/portrait.jpg') }}" 
+                         alt="Creator Portrait" 
+                         class="portrait-img"
+                         onerror="this.src='{{ url_for('static', filename='img/me.jpg') }}';">
+                    <div class="portrait-overlay">
+                        <span class="portrait-name">Joy Ann Balaguer</span>
+                    </div>
+                    <div class="portrait-glow"></div>
+                </div>
+            </div>
+
+            <div class="about-text">
+                <h2 class="text-primary">Hello! I'm the Creator of UnBoreMe 👋</h2>
+                <p>
+                    Hi, I’m Joy Ann, the person who created UnBoreMe. This website is my final 
+                    project, made as a requirement for my final projects in three different subjects.
+                     I built this platform to apply what I have learned in my classes and to challenge 
+                     myself to complete a full project from start to finish.
+                </p>
+                <p>
+                    I am currently a second-year college student at Laguna University University, taking BSIT – System Development. 
+                    When I’m not working on this project, I enjoy playing games, learning new things, and thinking about how to make UnBoreMe better. 
+                    This project means a lot to me because it shows how much I’ve learned and how far I’ve come.
+                </p>
+
+                <div class="about-divider"></div>
+
+                <h2 class="text-primary">About UnBoreMe 🎮</h2>
+                <p>
+                    UnBoreMe is my final project, created as part of my journey in learning web
+                     development and game programming. I built this platform to challenge myself by 
+                     combining everything I’ve learnedbackend development, frontend design, and game 
+                     logic into one complete project.
+                </p>
+                <p>
+                   This project represents both my technical growth and my passion for games. Every 
+                   feature, from user authentication to game scoring and the overall design, was 
+                   carefully implemented to meet the requirements of my final project while also 
+                   creating something genuinely fun to use.
+                </p>
+                <p>
+                    UnBoreMe is not just an academic requirement—it’s a reflection of what I can 
+                    build, how I solve problems, and how I turn ideas into working systems.
+                </p>
+
+                <div class="about-features">
+                    <div class="about-feature-item">
+                        <span class="feature-emoji">🎯</span>
+                        <span>8 Classic Games</span>
+                    </div>
+                    <div class="about-feature-item">
+                        <span class="feature-emoji">📱</span>
+                        <span>Fully Responsive</span>
+                    </div>
+                    <div class="about-feature-item">
+                        <span class="feature-emoji">🔒</span>
+                        <span>Secure & Safe</span>
+                    </div>
+                    <div class="about-feature-item">
+                        <span class="feature-emoji">✨</span>
+                        <span>Simple Instructions</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-cta glass">
+            <h3 class="neon-text">Let's Connect!</h3>
+            <p>Follow my journey and stay updated with the latest features</p>
+            <div class="about-social-links">
+                <a href="https://www.facebook.com/share/1DVZqoaUDS/" target="_blank" class="social-btn glass">
+                    📘 Facebook
+                </a>
+                <a href="https://www.instagram.com/isshi56_?igsh=c2w2MTA4ZWVmMGFr" target="_blank" class="social-btn glass">
+                    📸 Instagram
+                </a>
+                <a href="https://www.tiktok.com/@itscasca_obvsly?_r=1&_t=ZS-920280yyrt1" target="_blank" class="social-btn glass">
+                    🎵 TikTok
+                </a>
+                <a href="https://github.com/Balaguer-JJ" target="_blank" class="social-btn glass">
+                    💻 GitHub
+                </a>
+            </div>
+            <div class="about-actions">
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Home</a>
+                {% if session.get('loggedin') %}
+                    <a href="{{ url_for('games.index') }}" class="btn btn-primary glow">Play Games</a>
+                {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary glow">Join Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

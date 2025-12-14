@@ -1444,6 +1444,406 @@ canvas {
     margin: 0.5rem 0;
 }
 
+/* ========================================
+   ABOUT ME PAGE STYLES
+   ======================================== */
+
+.about-section {
+    padding: 2rem 0;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.about-header h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.about-content {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 3rem;
+    padding: 3rem;
+    margin-bottom: 2rem;
+    align-items: start;
+}
+
+.about-portrait {
+    position: sticky;
+    top: 100px;
+    display: block;
+    visibility: visible;
+}
+
+.portrait-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    display: block;
+    visibility: visible;
+}
+
+.portrait-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
+.portrait-wrapper:hover .portrait-img {
+    transform: scale(1.15);
+}
+
+.portrait-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.portrait-wrapper:hover .portrait-overlay {
+    opacity: 1;
+}
+
+.portrait-name {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color);
+    animation: nameGlow 2s ease-in-out infinite alternate;
+    text-align: center;
+    padding: 1rem;
+}
+
+@keyframes nameGlow {
+    from { 
+        text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+    }
+    to { 
+        text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color), 0 0 60px var(--primary-color);
+    }
+}
+
+.portrait-glow {
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 0%, transparent 70%);
+    pointer-events: none;
+    animation: portraitGlow 3s ease-in-out infinite;
+}
+
+@keyframes portraitGlow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.about-text {
+    flex: 1;
+}
+
+.about-text h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+.about-text h2:first-child {
+    margin-top: 0;
+}
+
+.about-text p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.about-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    margin: 2.5rem 0;
+}
+
+.about-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.about-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--light-glass);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.about-feature-item:hover {
+    border-color: var(--primary-color);
+    transform: translateX(5px);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.feature-emoji {
+    font-size: 1.5rem;
+}
+
+.about-cta {
+    text-align: center;
+    padding: 3rem;
+}
+
+.about-cta h3 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.about-cta p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.about-social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.social-btn {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    border: 2px solid var(--primary-color);
+}
+
+.social-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0, 255, 255, 0.4);
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+.about-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* Responsive Design for About Page */
+@media (max-width: 1024px) {
+    .about-content {
+        grid-template-columns: 250px 1fr;
+        gap: 2rem;
+        padding: 2rem;
+    }
+
+    .about-portrait {
+        top: 80px;
+    }
+
+    .portrait-wrapper {
+        border-width: 2px;
+    }
+
+    .portrait-name {
+        font-size: 1.3rem;
+        padding: 0.75rem;
+    }
+
+    .about-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .about-text h2 {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 1.5rem;
+    }
+
+    .about-portrait {
+        position: static !important;
+        max-width: 250px;
+        width: 250px;
+        height: 250px;
+        margin: 0 auto 2rem auto;
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    .portrait-wrapper {
+        border-width: 2px;
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+        width: 100%;
+        height: 100%;
+        padding-bottom: 0;
+    }
+
+    .portrait-name {
+        font-size: 1.2rem;
+        padding: 0.75rem;
+    }
+
+    .about-header h1 {
+        font-size: 2rem;
+    }
+
+    .about-text h2 {
+        font-size: 1.5rem;
+    }
+
+    .about-text p {
+        font-size: 1rem;
+    }
+
+    .about-features {
+        grid-template-columns: 1fr;
+    }
+
+    .about-cta {
+        padding: 2rem 1.5rem;
+    }
+
+    .about-cta h3 {
+        font-size: 1.5rem;
+    }
+
+    .about-social-links {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .social-btn {
+        width: 100%;
+    }
+
+    .about-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .about-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .about-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .about-portrait {
+        max-width: 200px;
+    }
+
+    .portrait-wrapper {
+        border-width: 2px;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+    }
+
+    .portrait-name {
+        font-size: 1.1rem;
+        padding: 0.5rem;
+    }
+
+    .about-text h2 {
+        font-size: 1.3rem;
+    }
+
+    .about-text p {
+        font-size: 0.95rem;
+    }
+
+    .about-feature-item {
+        padding: 0.75rem;
+    }
+
+    .feature-emoji {
+        font-size: 1.25rem;
+    }
+
+    .about-cta {
+        padding: 1.5rem 1rem;
+    }
+
+    .about-cta h3 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .about-portrait {
+        max-width: 180px;
+    }
+
+    .portrait-name {
+        font-size: 1rem;
+        padding: 0.5rem;
+    }
+
+    .about-header h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Landscape orientation adjustments for portrait */
+@media (max-height: 600px) and (orientation: landscape) {
+    .about-portrait {
+        position: static;
+        max-width: 180px;
+    }
+
+    .about-content {
+        grid-template-columns: 180px 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .portrait-name {
+        font-size: 1rem;
+    }
+}
+
 /* Utility Classes */
 .mt-4 { margin-top: 2rem; }
 .mb-4 { margin-bottom: 2rem; }
