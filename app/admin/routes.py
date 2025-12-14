@@ -4,7 +4,8 @@ Administrative dashboard and user management
 Patched: blueprint declared before heavy imports; relative imports to keep package context;
 expose root endpoint name 'dashboard' so templates using admin.dashboard resolve.
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, session, request
+from flask import Blueprint, render_template, redirect, url_for, flash, session, request, abort
+from jinja2 import TemplateNotFound
 
 # Create blueprint immediately so import-time failures later won't prevent it from existing
 admin_bp = Blueprint('admin', __name__, template_folder='templates')
@@ -144,8 +145,8 @@ def edit_user(user_id):
         # Update user
         if User.update_profile(user_id, firstname, middlename, lastname, birthday, contact):
             # Log action
-            AuditLog.log(session['user_id'], 'USER_UPDATE', f'Updated user: {user.get('username')}')
-            flash(f'User {user.get('username')} updated successfully!', 'success')
+            AuditLog.log(session['user_id'], 'USER_UPDATE', f"Updated user: {user.get('username')}")
+            flash(f'User {user.get("username")} updated successfully!', 'success')
             return redirect(url_for('admin.view_user', user_id=user_id))
         else:
             flash('Failed to update user. Please try again.', 'danger')
@@ -166,8 +167,8 @@ def activate_user(user_id):
 
     if User.activate(user_id):
         # Log action
-        AuditLog.log(session['user_id'], 'USER_ACTIVATE', f'Activated user: {user.get('username')}')
-        flash(f'User {user.get('username')} activated successfully!', 'success')
+        AuditLog.log(session['user_id'], 'USER_ACTIVATE', f'Activated user: {user.get("username")}')
+        flash(f'User {user.get("username")} activated successfully!', 'success')
     else:
         flash('Failed to activate user.', 'danger')
 
@@ -192,8 +193,8 @@ def deactivate_user(user_id):
 
     if User.deactivate(user_id):
         # Log action
-        AuditLog.log(session['user_id'], 'USER_DEACTIVATE', f'Deactivated user: {user.get('username')}')
-        flash(f'User {user.get('username')} deactivated successfully!', 'success')
+        AuditLog.log(session['user_id'], 'USER_DEACTIVATE', f'Deactivated user: {user.get("username")}')
+        flash(f'User {user.get("username")} deactivated successfully!', 'success')
     else:
         flash('Failed to deactivate user.', 'danger')
 
@@ -227,14 +228,20 @@ def delete_user(user_id):
     return redirect(url_for('admin.users'))
 
 
-@admin_bp.route('/games')
+@admin_bp.route('/games/play/<slug>')
 @login_required
 @active_required
 @admin_required
-def games():
-    """Manage games"""
-    games_list = Game.get_all()
-    return render_template('admin/games.html', games=games_list)
+def play_game(slug):
+    """
+    Serve embed-only game page (no header/footer) for iframe viewing.
+    Returns templates/games/embed/<slug>.html
+    """
+    try:
+        # This will render templates/games/embed/<slug>.html
+        return render_template(f'games/embed/{slug}.html', slug=slug)
+    except TemplateNotFound:
+        abort(404)
 
 
 @admin_bp.route('/games/toggle/<int:user_id>/<int:game_id>', methods=['POST'])
@@ -255,15 +262,15 @@ def toggle_game(user_id, game_id):
     if action == 'enable':
         if UserGame.enable_game(user_id, game_id):
             AuditLog.log(session['user_id'], 'GAME_ENABLE',
-                        f'Enabled game "{game.get('name')}" for user {user.get('username')}')
-            flash(f'Game "{game.get('name')}" enabled for {user.get('username')}!', 'success')
+                        f'Enabled game "{game.get("name")}" for user {user.get("username")}')
+            flash(f'Game "{game.get("name")}" enabled for {user.get("username")}!', 'success')
         else:
             flash('Failed to enable game.', 'danger')
     elif action == 'disable':
         if UserGame.disable_game(user_id, game_id):
             AuditLog.log(session['user_id'], 'GAME_DISABLE',
-                        f'Disabled game "{game.get('name')}" for user {user.get('username')}')
-            flash(f'Game "{game.get('name')}" disabled for {user.get('username')}!', 'success')
+                        f'Disabled game "{game.get("name")}" for user {user.get("username")}')
+            flash(f'Game "{game.get("name")}" disabled for {user.get("username")}', 'success')
         else:
             flash('Failed to disable game.', 'danger')
 

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     
     # Run the application
     print(f"\n{'='*60}")
-    print(f"  Flask Gaming Platform Server")
+    print(f"  UnBoreMe Server")
     print(f"{'='*60}")
     print(f"  Running on: http://{host}:{port}")
     print(f"  Debug Mode: {debug_mode}")
