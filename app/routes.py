@@ -3,7 +3,7 @@ Main Application Routes
 Handles homepage and public routes
 """
 from flask import Blueprint, render_template, session
-from app.models import User
+from app.models import User, GameScore
 
 main_bp = Blueprint('main', __name__)
 
@@ -22,6 +22,13 @@ def index():
 def about():
     """About page"""
     return render_template('about.html')
+
+
+@main_bp.route('/leaderboard')
+def leaderboard():
+    """Global leaderboard page"""
+    leaderboards = GameScore.get_global_leaderboards(limit=5)
+    return render_template('leaderboard.html', leaderboards=leaderboards)
 
 
 @main_bp.route('/contact')

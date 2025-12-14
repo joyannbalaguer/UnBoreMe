@@ -455,3 +455,59 @@ class GameScore:
             LIMIT %s
         """
         return get_all(query, (game_id, limit))
+    
+    @staticmethod
+    def get_user_game_stats(user_id):
+        """Get user's game statistics for dashboard"""
+        query = """
+            SELECT 
+                g.name as game_name,
+                gs.score as best_score,
+                gs.score as last_score,
+                gs.updated_at as last_played,
+                gs.created_at as first_played
+            FROM game_scores gs
+            JOIN games g ON gs.game_id = g.id
+            WHERE gs.user_id = %s
+            ORDER BY gs.updated_at DESC
+        """
+        return get_all(query, (user_id,))
+    
+    @staticmethod
+    def get_global_leaderboards(limit=5):
+        """Get top scores for all games grouped by game"""
+        query = """
+            SELECT 
+                g.id as game_id,
+                g.name as game_name,
+                g.slug as game_slug,
+                u.username,
+                gs.score,
+                gs.updated_at
+            FROM games g
+            LEFT JOIN game_scores gs ON g.id = gs.game_id
+            LEFT JOIN users u ON gs.user_id = u.id
+            WHERE gs.score IS NOT NULL
+            ORDER BY g.id, gs.score DESC, gs.updated_at DESC
+        """
+        results = get_all(query)
+        
+        # Group results by game and limit to top N per game
+        leaderboards = {}
+        for row in results:
+            game_id = row['game_id']
+            if game_id not in leaderboards:
+                leaderboards[game_id] = {
+                    'game_name': row['game_name'],
+                    'game_slug': row['game_slug'],
+                    'scores': []
+                }
+            
+            if len(leaderboards[game_id]['scores']) < limit:
+                leaderboards[game_id]['scores'].append({
+                    'username': row['username'],
+                    'score': row['score'],
+                    'updated_at': row['updated_at']
+                })
+        
+        return leaderboards

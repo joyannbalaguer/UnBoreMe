@@ -1844,6 +1844,332 @@ canvas {
     }
 }
 
+/* ========================================
+   LEADERBOARD STYLES
+   ======================================== */
+
+.leaderboard-container {
+    padding: 2rem 0;
+    min-height: calc(100vh - 200px);
+}
+
+.leaderboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.leaderboard-header h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.leaderboard-header p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.leaderboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.leaderboard-card {
+    padding: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.leaderboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0, 255, 255, 0.3);
+    border-color: var(--primary-color);
+}
+
+.leaderboard-card-header {
+    padding: 1.5rem;
+    background: rgba(0, 255, 255, 0.1);
+    border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+}
+
+.leaderboard-card-header h3 {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+.leaderboard-card-body {
+    padding: 1.5rem;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.leaderboard-table thead tr {
+    border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+}
+
+.leaderboard-table th {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.leaderboard-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s ease;
+}
+
+.leaderboard-table tbody tr:hover {
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.leaderboard-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-table td {
+    padding: 0.75rem 0.5rem;
+    color: var(--text-secondary);
+}
+
+.rank-col {
+    width: 60px;
+    text-align: center;
+}
+
+.username-col {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.score-col {
+    width: 80px;
+    text-align: right;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.rank-medal {
+    font-size: 1.5rem;
+    display: inline-block;
+    animation: medalFloat 2s ease-in-out infinite;
+}
+
+.rank-medal.gold {
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+}
+
+.rank-medal.silver {
+    filter: drop-shadow(0 0 5px rgba(192, 192, 192, 0.5));
+}
+
+.rank-medal.bronze {
+    filter: drop-shadow(0 0 5px rgba(205, 127, 50, 0.5));
+}
+
+@keyframes medalFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.rank-number {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.rank-1 td {
+    background: rgba(255, 215, 0, 0.03);
+}
+
+.rank-2 td {
+    background: rgba(192, 192, 192, 0.03);
+}
+
+.rank-3 td {
+    background: rgba(205, 127, 50, 0.03);
+}
+
+.no-scores {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Responsive Leaderboard */
+@media (max-width: 1024px) {
+    .leaderboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .leaderboard-header h1 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .leaderboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .leaderboard-header h1 {
+        font-size: 2rem;
+    }
+    
+    .leaderboard-header p {
+        font-size: 1rem;
+    }
+    
+    .leaderboard-card-header {
+        padding: 1rem;
+    }
+    
+    .leaderboard-card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .leaderboard-container {
+        padding: 1rem 0;
+    }
+    
+    .leaderboard-header {
+        margin-bottom: 2rem;
+    }
+    
+    .leaderboard-header h1 {
+        font-size: 1.75rem;
+    }
+    
+    .leaderboard-table {
+        font-size: 0.85rem;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .rank-col {
+        width: 50px;
+    }
+    
+    .score-col {
+        width: 70px;
+    }
+    
+    .rank-medal {
+        font-size: 1.2rem;
+    }
+}
+
+/* Game Stats Grid - Compact Table Layout */
+.game-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.stats-grid-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 0;
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 5px 5px 0 0;
+}
+
+.stats-grid-header > div {
+    padding: 0.6rem 0.75rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: left;
+    border-right: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.stats-grid-header > div:last-child {
+    border-right: none;
+}
+
+.stats-grid-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background 0.2s ease;
+}
+
+.stats-grid-row:hover {
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.stats-grid-row:last-child {
+    border-radius: 0 0 5px 5px;
+}
+
+.stats-cell {
+    padding: 0.6rem 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+}
+
+.stats-cell:last-child {
+    border-right: none;
+}
+
+.stats-number {
+    color: var(--primary-color);
+    font-weight: 500;
+    justify-content: flex-start;
+}
+
+/* Responsive adjustments for game stats grid */
+@media (max-width: 576px) {
+    .game-stats-grid {
+        font-size: 0.85rem;
+    }
+    
+    .stats-grid-header > div,
+    .stats-cell {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .stats-grid-header {
+        grid-template-columns: 2fr 1fr 1fr;
+    }
+    
+    .stats-grid-row {
+        grid-template-columns: 2fr 1fr 1fr;
+    }
+}
+
 /* Utility Classes */
 .mt-4 { margin-top: 2rem; }
 .mb-4 { margin-bottom: 2rem; }

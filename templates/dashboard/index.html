@@ -30,31 +30,31 @@
             </div>
 
             <!-- User Game Stats -->
-<div class="dashboard-card glass">
-    <div class="card-header">
-        <h3>🎮 Your Game Stats</h3>
-    </div>
-    <div class="card-body">
-        <div class="stats-list">
-
-            {% if game_stats %}
-                {% for stat in game_stats %}
-                <div class="stat-item">
-                    <span class="stat-label">{{ stat.game_name }}:</span>
-                    <span class="stat-value gradient-text">
-                        Score: {{ stat.last_score }} |
-                        High Score: {{ stat.high_score }} |
-                        Plays: {{ stat.total_plays }}
-                    </span>
+            <div class="dashboard-card glass">
+                <div class="card-header">
+                    <h3>🎮 Your Game Stats</h3>
                 </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-muted">No game stats available yet.</p>
-            {% endif %}
-
-        </div>
-    </div>
-</div>
+                <div class="card-body">
+                    {% if game_stats %}
+                        <div class="game-stats-grid">
+                            <div class="stats-grid-header">
+                                <div>Game Name</div>
+                                <div>Best Score</div>
+                                <div>Last Score</div>
+                            </div>
+                            {% for stat in game_stats %}
+                            <div class="stats-grid-row">
+                                <div class="stats-cell">{{ stat.game_name }}</div>
+                                <div class="stats-cell stats-number">{{ stat.best_score if stat.best_score else 0 }}</div>
+                                <div class="stats-cell stats-number">{{ stat.last_score if stat.last_score else 0 }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No game stats available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
 
 
             <!-- Quick Actions -->

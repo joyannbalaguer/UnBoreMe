@@ -284,7 +284,7 @@ class SnakeGame:
         best_rect = best.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
         self.screen.blit(best, best_rect)
         
-        restart = self.instruction_font.render('Press SPACE to Restart', True, TEXT_COLOR)
+        restart = self.instruction_font.render('Press R to Restart | ESC to Quit', True, TEXT_COLOR)
         restart_rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 100))
         self.screen.blit(restart, restart_rect)
     
@@ -310,7 +310,7 @@ class SnakeGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-                    elif event.key == pygame.K_SPACE:
+                    elif event.key in (pygame.K_SPACE, pygame.K_r):
                         if not self.game_running:
                             self.start()
                     else:

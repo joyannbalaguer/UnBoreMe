@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - UnBoreMe{% endblock %}
+
+{% block content %}
+<div class="leaderboard-container">
+    <div class="container">
+        <div class="leaderboard-header">
+            <h1 class="neon-text">🏆 Global Leaderboard</h1>
+            <p class="text-secondary">Top players across all games</p>
+        </div>
+
+        <div class="leaderboard-grid">
+            {% if leaderboards %}
+                {% for game_id, data in leaderboards.items() %}
+                <div class="leaderboard-card glass">
+                    <div class="leaderboard-card-header">
+                        <h3>{{ data.game_name }}</h3>
+                    </div>
+                    <div class="leaderboard-card-body">
+                        {% if data.scores %}
+                            <table class="leaderboard-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Rank</th>
+                                        <th class="username-col">Username</th>
+                                        <th class="score-col">Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for score in data.scores %}
+                                    <tr class="rank-{{ loop.index }}">
+                                        <td class="rank-col">
+                                            {% if loop.index == 1 %}
+                                                <span class="rank-medal gold">🥇</span>
+                                            {% elif loop.index == 2 %}
+                                                <span class="rank-medal silver">🥈</span>
+                                            {% elif loop.index == 3 %}
+                                                <span class="rank-medal bronze">🥉</span>
+                                            {% else %}
+                                                <span class="rank-number">{{ loop.index }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="username-col">{{ score.username }}</td>
+                                        <td class="score-col">{{ score.score }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="no-scores">No scores yet. Be the first to play!</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <h3>No Leaderboard Data</h3>
+                    <p>Start playing games to see the leaderboard!</p>
+                    <a href="{{ url_for('games.index') }}" class="btn btn-primary">Play Games</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@ Dashboard Routes
 User dashboard and profile management
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request
-from app.models import User, Post
+from app.models import User, Post, GameScore
 from app.utils.decorators import login_required, active_required
 from functools import wraps
 
@@ -21,7 +21,10 @@ def index():
     posts = Post.get_by_user(session['user_id'])
     recent_posts = posts[:5] if posts else []
     
-    return render_template('dashboard/index.html', user=user, recent_posts=recent_posts)
+    # Get user's game statistics
+    game_stats = GameScore.get_user_game_stats(session['user_id'])
+    
+    return render_template('dashboard/index.html', user=user, recent_posts=recent_posts, game_stats=game_stats)
 
 
 @dashboard_bp.route('/profile')
