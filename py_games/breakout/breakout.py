@@ -1,14 +1,16 @@
 """
 Breakout Game - Pygame Version (OOP Enhanced)
-Classic brick-breaking game
-Refactor: adds GameObject base, Paddle/Ball/Brick inherit and override update()/draw()
+Classic brick-breaking game with score saving
 """
 
 import pygame
 import sys
-import math
+import os
 
-# Initialize Pygame
+# --- SCORE API IMPORT ---
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from score_api import send_score_to_api, get_user_and_game_from_env
+
 pygame.init()
 
 # Constants
@@ -24,30 +26,22 @@ TEXT_COLOR = (255, 255, 255)
 BORDER_COLOR = (26, 26, 46)
 
 BRICK_COLORS = [
-    (255, 0, 110),   # Pink
-    (255, 102, 0),   # Orange
-    (255, 208, 0),   # Yellow
-    (0, 255, 136),   # Green
-    (0, 217, 255)    # Cyan
+    (255, 0, 110),
+    (255, 102, 0),
+    (255, 208, 0),
+    (0, 255, 136),
+    (0, 217, 255)
 ]
 
 
-# ----------------------------
-# Base class for polymorphism
-# ----------------------------
 class GameObject:
     def update(self, *args, **kwargs):
-        """Optional per-frame update hook."""
         pass
 
-    def draw(self, screen, *args, **kwargs):
-        """Draw the object. Subclasses override this."""
-        raise NotImplementedError("Subclasses must implement draw()")
+    def draw(self, screen):
+        raise NotImplementedError
 
 
-# ----------------------------
-# Paddle (inherits GameObject)
-# ----------------------------
 class Paddle(GameObject):
     def __init__(self, x, y, width, height):
         self.x = float(x)
@@ -56,31 +50,17 @@ class Paddle(GameObject):
         self.height = height
         self.speed = 8
 
-    def move_left(self):
-        self.x = max(0, self.x - self.speed)
-
-    def move_right(self, canvas_width):
-        self.x = min(canvas_width - self.width, self.x + self.speed)
-
-    def update(self, keys=None, canvas_width=None):
-        """
-        If keys is provided, paddle will handle player input.
-        Signature kept extensible for future AI or scripted control.
-        """
-        if keys is None or canvas_width is None:
-            return
+    def update(self, keys, canvas_width):
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.move_left()
+            self.x = max(0, self.x - self.speed)
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.move_right(canvas_width)
+            self.x = min(canvas_width - self.width, self.x + self.speed)
 
     def draw(self, screen):
-        pygame.draw.rect(screen, PADDLE_COLOR, (int(self.x), int(self.y), self.width, self.height))
+        pygame.draw.rect(screen, PADDLE_COLOR,
+                         (int(self.x), int(self.y), self.width, self.height))
 
 
-# ----------------------------
-# Ball (inherits GameObject)
-# ----------------------------
 class Ball(GameObject):
     def __init__(self, x, y, radius):
         self.x = float(x)
@@ -88,65 +68,41 @@ class Ball(GameObject):
         self.radius = radius
         self.speed_x = 4.0
         self.speed_y = -4.0
-        self.max_speed = 8.0
 
-    def update(self, *args, **kwargs):
-        # allow call signature update(canvas_width, canvas_height) though not required here
+    def update(self):
         self.x += self.speed_x
         self.y += self.speed_y
 
-    def check_wall_collision(self, canvas_width, canvas_height):
-        # Left and right walls
-        if self.x - self.radius <= 0 or self.x + self.radius >= canvas_width:
-            self.speed_x = -self.speed_x
-
-        # Top wall
+    def check_wall_collision(self, w, h):
+        if self.x - self.radius <= 0 or self.x + self.radius >= w:
+            self.speed_x *= -1
         if self.y - self.radius <= 0:
-            self.speed_y = -self.speed_y
+            self.speed_y *= -1
 
     def check_paddle_collision(self, paddle):
-        # paddle coordinates may be float
-        px, py = paddle.x, paddle.y
-        pw, ph = paddle.width, paddle.height
-
-        if (self.y + self.radius >= py and
-                self.y - self.radius <= py + ph and
-                self.x >= px and
-                self.x <= px + pw):
-
-            # Calculate hit position for angle adjustment
-            hit_pos = (self.x - px) / pw
-            self.speed_x = (hit_pos - 0.5) * 10.0
+        if (self.y + self.radius >= paddle.y and
+            paddle.x <= self.x <= paddle.x + paddle.width):
+            hit_pos = (self.x - paddle.x) / paddle.width
+            self.speed_x = (hit_pos - 0.5) * 10
             self.speed_y = -abs(self.speed_y)
-            return True
-        return False
 
-    def is_out_of_bounds(self, canvas_height):
-        return self.y - self.radius > canvas_height
+    def is_out(self, h):
+        return self.y - self.radius > h
 
-    def reset(self, canvas_width, canvas_height):
-        self.x = canvas_width / 2.0
-        self.y = canvas_height - 50.0
-        self.speed_x = 4.0
-        self.speed_y = -4.0
+    def reset(self):
+        self.x = WINDOW_WIDTH / 2
+        self.y = WINDOW_HEIGHT - 50
+        self.speed_x = 4
+        self.speed_y = -4
 
     def draw(self, screen):
-        pygame.draw.circle(screen, BALL_COLOR, (int(self.x), int(self.y)), self.radius)
-
-    def get_rect(self):
-        return pygame.Rect(int(self.x - self.radius), int(self.y - self.radius),
-                           int(self.radius * 2), int(self.radius * 2))
+        pygame.draw.circle(screen, BALL_COLOR,
+                           (int(self.x), int(self.y)), self.radius)
 
 
-# ----------------------------
-# Brick (inherits GameObject)
-# ----------------------------
 class Brick(GameObject):
-    def __init__(self, x, y, width, height, color, points):
-        self.x = x
-        self.y = y
-        self.width = int(width)
-        self.height = int(height)
+    def __init__(self, x, y, w, h, color, points):
+        self.rect = pygame.Rect(x, y, int(w), int(h))
         self.color = color
         self.points = points
         self.destroyed = False
@@ -154,197 +110,115 @@ class Brick(GameObject):
     def check_collision(self, ball):
         if self.destroyed:
             return False
-
-        # Axis-aligned bounding box vs circle approximation (same as original logic)
-        if (ball.x + ball.radius >= self.x and
-                ball.x - ball.radius <= self.x + self.width and
-                ball.y + ball.radius >= self.y and
-                ball.y - ball.radius <= self.y + self.height):
-
-            # Determine collision side by overlap amounts
-            overlap_left = ball.x + ball.radius - self.x
-            overlap_right = (self.x + self.width) - (ball.x - ball.radius)
-            overlap_top = ball.y + ball.radius - self.y
-            overlap_bottom = (self.y + self.height) - (ball.y - ball.radius)
-
-            min_overlap = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
-
-            if min_overlap == overlap_left or min_overlap == overlap_right:
-                ball.speed_x = -ball.speed_x
-            else:
-                ball.speed_y = -ball.speed_y
-
+        if self.rect.collidepoint(ball.x, ball.y):
+            ball.speed_y *= -1
             self.destroyed = True
             return True
         return False
 
     def draw(self, screen):
         if not self.destroyed:
-            pygame.draw.rect(screen, self.color, (int(self.x), int(self.y), self.width, self.height))
-            pygame.draw.rect(screen, BORDER_COLOR, (int(self.x), int(self.y), self.width, self.height), 2)
+            pygame.draw.rect(screen, self.color, self.rect)
+            pygame.draw.rect(screen, BORDER_COLOR, self.rect, 2)
 
 
-# ----------------------------
-# BreakoutGame orchestrator
-# ----------------------------
 class BreakoutGame:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Breakout")
         self.clock = pygame.time.Clock()
 
-        # Game objects
         self.paddle = Paddle(WINDOW_WIDTH // 2 - 50, WINDOW_HEIGHT - 30, 100, 10)
         self.ball = Ball(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 50, 8)
-        self.bricks = []
 
-        # Game state
         self.score = 0
         self.lives = 3
+        self.running = False
         self.game_over = False
         self.game_won = False
-        self.game_running = False
+        self.score_sent = False
 
-        # Brick settings
-        self.brick_rows = 5
-        self.brick_cols = 8
-        # compute brick width as float then pass to Brick which casts to int internally
-        self.brick_width = (WINDOW_WIDTH - 80) / self.brick_cols
-        self.brick_height = 20
-        self.brick_padding = 10
-        self.brick_offset_top = 60
-        self.brick_offset_left = 40
-
-        # Fonts
-        self.title_font = pygame.font.Font(None, 64)
-        self.info_font = pygame.font.Font(None, 32)
-        self.ui_font = pygame.font.Font(None, 28)
-
+        self.bricks = []
         self.create_bricks()
+
+        self.font = pygame.font.Font(None, 36)
+        self.big_font = pygame.font.Font(None, 64)
 
     def create_bricks(self):
-        self.bricks = []
-        for row in range(self.brick_rows):
-            for col in range(self.brick_cols):
-                x = col * (self.brick_width + self.brick_padding) + self.brick_offset_left
-                y = row * (self.brick_height + self.brick_padding) + self.brick_offset_top
-                color = BRICK_COLORS[row % len(BRICK_COLORS)]
-                points = (self.brick_rows - row) * 10
-                self.bricks.append(Brick(x, y, self.brick_width, self.brick_height, color, points))
+        self.bricks.clear()
+        rows, cols = 5, 8
+        bw = (WINDOW_WIDTH - 80) / cols
+        for r in range(rows):
+            for c in range(cols):
+                x = 40 + c * (bw + 10)
+                y = 60 + r * 30
+                self.bricks.append(
+                    Brick(x, y, bw, 20, BRICK_COLORS[r], (rows - r) * 10)
+                )
 
-    def start(self):
-        self.game_running = True
+    def send_score_once(self):
+        if self.score_sent:
+            return
+        user_id, game_id = get_user_and_game_from_env()
+        if user_id and game_id:
+            send_score_to_api(user_id, game_id, self.score)
+            print("✓ Breakout score saved:", self.score)
+        self.score_sent = True
 
     def reset(self):
-        self.score = 0
-        self.lives = 3
-        self.game_over = False
-        self.game_won = False
-        self.game_running = False
-        self.paddle.x = WINDOW_WIDTH // 2 - 50
-        self.ball.reset(WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.create_bricks()
+        self.__init__()
 
-    def update(self):
-        if not self.game_running or self.game_over or self.game_won:
+    def update(self, keys):
+        if not self.running or self.game_over or self.game_won:
             return
 
-        # Update ball (polymorphic)
+        self.paddle.update(keys, WINDOW_WIDTH)
         self.ball.update()
         self.ball.check_wall_collision(WINDOW_WIDTH, WINDOW_HEIGHT)
         self.ball.check_paddle_collision(self.paddle)
 
-        # Check brick collisions
         for brick in self.bricks:
             if brick.check_collision(self.ball):
                 self.score += brick.points
 
-        # Check if all bricks destroyed
-        if all(brick.destroyed for brick in self.bricks):
+        if all(b.destroyed for b in self.bricks):
             self.game_won = True
-            self.game_running = False
+            self.running = False
+            self.send_score_once()
 
-        # Check if ball out of bounds
-        if self.ball.is_out_of_bounds(WINDOW_HEIGHT):
+        if self.ball.is_out(WINDOW_HEIGHT):
             self.lives -= 1
-
             if self.lives <= 0:
                 self.game_over = True
-                self.game_running = False
+                self.running = False
+                self.send_score_once()
             else:
-                self.ball.reset(WINDOW_WIDTH, WINDOW_HEIGHT)
-                self.paddle.x = WINDOW_WIDTH // 2 - 50
+                self.ball.reset()
 
     def draw(self):
-        # Clear screen
         self.screen.fill(BACKGROUND_COLOR)
 
-        if not self.game_running and not self.game_over and not self.game_won:
-            # Start screen
-            title = self.title_font.render('BREAKOUT', True, TEXT_COLOR)
-            title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 100))
-            self.screen.blit(title, title_rect)
-
-            instructions = [
-                'Use Arrow Keys or A/D to move paddle',
-                'Break all the bricks to win!',
-                '',
-                'Press SPACE to Start'
-            ]
-
-            y_offset = WINDOW_HEIGHT // 2
-            for instruction in instructions:
-                text = self.info_font.render(instruction, True, TEXT_COLOR)
-                text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, y_offset))
-                self.screen.blit(text, text_rect)
-                y_offset += 40
-
+        if not self.running and not self.game_over and not self.game_won:
+            text = self.big_font.render("BREAKOUT", True, TEXT_COLOR)
+            self.screen.blit(text, text.get_rect(center=(400, 200)))
+            tip = self.font.render("Press SPACE to Start", True, TEXT_COLOR)
+            self.screen.blit(tip, tip.get_rect(center=(400, 300)))
         else:
-            # Draw UI
-            score_text = self.ui_font.render(f'Score: {self.score}', True, TEXT_COLOR)
-            self.screen.blit(score_text, (20, 20))
-
-            lives_text = self.ui_font.render(f'Lives: {self.lives}', True, TEXT_COLOR)
-            lives_rect = lives_text.get_rect(topright=(WINDOW_WIDTH - 20, 20))
-            self.screen.blit(lives_text, lives_rect)
-
-            # Draw bricks (polymorphic)
-            for brick in self.bricks:
-                brick.draw(self.screen)
-
-            # Draw paddle
+            for b in self.bricks:
+                b.draw(self.screen)
             self.paddle.draw(self.screen)
-
-            # Draw ball
             self.ball.draw(self.screen)
 
-            # Draw game over or won overlay
+            self.screen.blit(self.font.render(f"Score: {self.score}", True, TEXT_COLOR), (20, 20))
+            self.screen.blit(self.font.render(f"Lives: {self.lives}", True, TEXT_COLOR), (680, 20))
+
             if self.game_over or self.game_won:
-                overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-                overlay.set_alpha(180)
-                overlay.fill((0, 0, 0))
-                self.screen.blit(overlay, (0, 0))
-
-                result_text = 'YOU WIN!' if self.game_won else 'GAME OVER'
-                result = self.title_font.render(result_text, True, TEXT_COLOR)
-                result_rect = result.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
-                self.screen.blit(result, result_rect)
-
-                score_display = self.info_font.render(f'Score: {self.score}', True, TEXT_COLOR)
-                score_rect = score_display.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 20))
-                self.screen.blit(score_display, score_rect)
-
-                restart = self.info_font.render('Press R to Restart', True, TEXT_COLOR)
-                restart_rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 70))
-                self.screen.blit(restart, restart_rect)
-
-    def handle_input(self, keys):
-        # Delegate control to paddle.update (polymorphic)
-        self.paddle.update(keys=keys, canvas_width=WINDOW_WIDTH)
+                msg = "YOU WIN!" if self.game_won else "GAME OVER"
+                overlay = self.big_font.render(msg, True, TEXT_COLOR)
+                self.screen.blit(overlay, overlay.get_rect(center=(400, 300)))
 
     def run(self):
         running = True
-
         while running:
             keys = pygame.key.get_pressed()
 
@@ -354,17 +228,13 @@ class BreakoutGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-                    elif event.key == pygame.K_SPACE and not self.game_running:
-                        if not self.game_over and not self.game_won:
-                            self.start()
-                    elif event.key == pygame.K_r:
-                        if self.game_over or self.game_won:
-                            self.reset()
+                    elif event.key == pygame.K_SPACE and not self.running:
+                        self.running = True
+                    elif event.key == pygame.K_r and (self.game_over or self.game_won):
+                        self.reset()
 
-            self.handle_input(keys)
-            self.update()
+            self.update(keys)
             self.draw()
-
             pygame.display.flip()
             self.clock.tick(FPS)
 
@@ -372,6 +242,5 @@ class BreakoutGame:
         sys.exit()
 
 
-if __name__ == '__main__':
-    game = BreakoutGame()
-    game.run()
+if __name__ == "__main__":
+    BreakoutGame().run()

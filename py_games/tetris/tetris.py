@@ -7,6 +7,11 @@ Refactor: adds GameObject base, Board and Piece inherit and override draw/update
 import pygame
 import random
 import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from score_api import send_score_to_api, get_user_and_game_from_env
 
 # Initialize Pygame
 pygame.init()
@@ -250,6 +255,10 @@ class TetrisGame:
             if not self.board.is_valid_move(self.current_piece):
                 self.game_over = True
                 self.game_running = False
+                # Send score to API
+                user_id, game_id = get_user_and_game_from_env()
+                if user_id and game_id:
+                    send_score_to_api(user_id, game_id, self.score)
 
     def update(self):
         if not self.game_running or self.game_over:

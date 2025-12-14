@@ -10,6 +10,10 @@ import json
 import os
 import sys
 
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from score_api import send_score_to_api, get_user_and_game_from_env
+
 # Initialize Pygame
 pygame.init()
 
@@ -409,6 +413,10 @@ class Game2048:
             self.board.add_random_tile()
             if self.board.is_game_over():
                 self.game_running = False
+                # Send score to API
+                user_id, game_id = get_user_and_game_from_env()
+                if user_id and game_id:
+                    send_score_to_api(user_id, game_id, self.score)
 
     def run(self):
         """Main game loop"""

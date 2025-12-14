@@ -11,320 +11,256 @@
         </div>
 
         <div class="profile-content glass">
-            <!-- PROFILE EDIT FORM (posts to edit_profile) -->
-            <form method="POST" action="{{ url_for('dashboard.edit_profile') }}" class="profile-form" id="profileForm">
+            <!-- PROFILE EDIT FORM -->
+            <form method="POST"
+                  action="{{ url_for('dashboard.edit_profile') }}"
+                  class="profile-form"
+                  id="profileForm">
+
                 <div class="form-section">
                     <h3>Personal Information</h3>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="firstname">First Name <span class="required">*</span></label>
-                            <input 
-                                type="text" 
-                                id="firstname" 
-                                name="firstname" 
-                                class="form-control glass" 
-                                value="{{ user.firstname }}"
-                                required
-                            >
+                            <label>First Name <span class="required">*</span></label>
+                            <input type="text"
+                                   name="firstname"
+                                   class="form-control glass"
+                                   value="{{ user.firstname }}"
+                                   required>
                         </div>
 
                         <div class="form-group">
-                            <label for="middlename">Middle Name</label>
-                            <input 
-                                type="text" 
-                                id="middlename" 
-                                name="middlename" 
-                                class="form-control glass" 
-                                value="{{ user.middlename or '' }}"
-                            >
+                            <label>Middle Name</label>
+                            <input type="text"
+                                   name="middlename"
+                                   class="form-control glass"
+                                   value="{{ user.middlename or '' }}">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="lastname">Last Name <span class="required">*</span></label>
-                        <input 
-                            type="text" 
-                            id="lastname" 
-                            name="lastname" 
-                            class="form-control glass" 
-                            value="{{ user.lastname }}"
-                            required
-                        >
+                        <label>Last Name <span class="required">*</span></label>
+                        <input type="text"
+                               name="lastname"
+                               class="form-control glass"
+                               value="{{ user.lastname }}"
+                               required>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="birthday">Birthday</label>
-                            <input 
-                                type="date" 
-                                id="birthday" 
-                                name="birthday" 
-                                class="form-control glass" 
-                                value="{{ user.birthday or '' }}"
-                            >
+                            <label>Birthday</label>
+                            <input type="date"
+                                   name="birthday"
+                                   class="form-control glass"
+                                   value="{{ user.birthday or '' }}">
                         </div>
 
                         <div class="form-group">
-                            <label for="contact">Contact Number</label>
-                            <input 
-                                type="tel" 
-                                id="contact" 
-                                name="contact" 
-                                class="form-control glass" 
-                                value="{{ user.contact or '' }}"
-                                placeholder="+63 912 345 6789"
-                            >
+                            <label>Contact Number</label>
+                            <input type="tel"
+                                   name="contact"
+                                   class="form-control glass"
+                                   value="{{ user.contact or '' }}"
+                                   placeholder="+63 912 345 6789">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
                     <h3>Account Information</h3>
-                    
+
                     <div class="form-group">
                         <label>Username</label>
-                        <input 
-                            type="text" 
-                            class="form-control glass" 
-                            value="{{ user.username }}"
-                            disabled
-                        >
+                        <input type="text"
+                               class="form-control glass"
+                               value="{{ user.username }}"
+                               disabled>
                         <small>Username cannot be changed</small>
                     </div>
 
                     <div class="form-group">
                         <label>Email</label>
-                        <input 
-                            type="email" 
-                            class="form-control glass" 
-                            value="{{ user.email }}"
-                            disabled
-                        >
+                        <input type="email"
+                               class="form-control glass"
+                               value="{{ user.email }}"
+                               disabled>
                         <small>Email cannot be changed</small>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <!-- Changed: Save button now opens confirm modal -->
-                    <button type="button" id="openConfirmProfileModal" class="btn btn-primary glow">Save Changes</button>
-                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="button"
+                            class="btn btn-primary glow"
+                            onclick="confirmProfileSave()">
+                        Save Changes
+                    </button>
+                    <a href="{{ url_for('dashboard.index') }}"
+                       class="btn btn-secondary">
+                        Cancel
+                    </a>
                 </div>
             </form>
 
-            <!-- Change Password Section (INLINE FORM) -->
+            <!-- CHANGE PASSWORD -->
             <div class="password-section" style="margin-top:2rem;">
                 <h3>Change Password</h3>
-                <form method="POST" action="{{ url_for('dashboard.change_password') }}" class="password-form" id="passwordForm">
+
+                <form method="POST"
+                      action="{{ url_for('dashboard.change_password') }}"
+                      id="passwordForm">
+
                     <div class="form-group">
-                        <label for="current_password">Current Password</label>
-                        <input 
-                            type="password" 
-                            id="current_password" 
-                            name="current_password" 
-                            class="form-control glass" 
-                            required
-                        >
+                        <label>Current Password</label>
+                        <input type="password"
+                               name="current_password"
+                               class="form-control glass"
+                               required>
                     </div>
 
                     <div class="form-group">
-                        <label for="new_password">New Password</label>
-                        <input 
-                            type="password" 
-                            id="new_password" 
-                            name="new_password" 
-                            class="form-control glass" 
-                            minlength="8"
-                            required
-                        >
+                        <label>New Password</label>
+                        <input type="password"
+                               id="new_password"
+                               name="new_password"
+                               class="form-control glass"
+                               minlength="8"
+                               required>
                         <small>Minimum 8 characters</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="confirm_new_password">Confirm New Password</label>
-                        <input 
-                            type="password" 
-                            id="confirm_new_password" 
-                            name="confirm_new_password" 
-                            class="form-control glass" 
-                            minlength="8"
-                            required
-                        >
+                        <label>Confirm New Password</label>
+                        <input type="password"
+                               id="confirm_new_password"
+                               name="confirm_new_password"
+                               class="form-control glass"
+                               minlength="8"
+                               required>
                     </div>
 
-                    <!-- NOTE: This button opens the confirmation modal instead of submitting directly -->
-                    <button type="button" id="openChangePasswordModal" class="btn btn-primary">Change Password</button>
+                    <button type="button"
+                            class="btn btn-primary"
+                            onclick="confirmPasswordChange()">
+                        Change Password
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-{# Server can set show_password_modal=True when rendering after a failed POST.
-   That will cause the modal to auto-open so the user sees the flash message. #}
-{% if show_password_modal %}
-<script>window.SHOULD_OPEN_PASSWORD_MODAL = true;</script>
-{% endif %}
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Confirmation Modal for Profile Save -->
-<div id="confirmProfileModal" class="modal-overlay" style="display:none;">
-    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="confirmProfileTitle" style="max-width:480px;">
-        <button type="button" class="modal-close" id="closeConfirmProfile" style="float:right; background:transparent; border:0; font-size:22px; color:#fff;">×</button>
-        <h2 id="confirmProfileTitle" style="color:#00f8ff; margin-top:0;">Confirm Changes</h2>
-        <p>Are you sure you want to change your name?</p>
-
-        <div class="modal-actions" style="margin-top:18px; display:flex; gap:10px; justify-content:flex-end;">
-            <button type="button" class="btn btn-secondary" id="cancelConfirmProfile">Cancel</button>
-            <button type="button" class="btn btn-primary" id="confirmSaveProfile">Yes, save changes</button>
-        </div>
-    </div>
-</div>
-
-<!-- Existing Confirmation Modal for Password (keeps your previous modal) -->
-<div id="confirmPasswordModal" class="modal-overlay" style="display:none;">
-    <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="confirmPasswordTitle" style="max-width:480px;">
-        <button type="button" class="modal-close" id="closeConfirmPassword" style="float:right; background:transparent; border:0; font-size:22px; color:#fff;">×</button>
-        <h2 id="confirmPasswordTitle" style="color:#00f8ff; margin-top:0;">Are you sure?</h2>
-        <p>Are you sure you want to change your password? Make sure you won't forget it!</p>
-
-        <div class="modal-actions" style="margin-top:18px; display:flex; gap:10px; justify-content:flex-end;">
-            <button type="button" class="btn btn-secondary" id="cancelConfirmPassword">Cancel</button>
-            <button type="button" class="btn btn-primary" id="confirmChangePassword">Yes, change password</button>
-        </div>
-    </div>
-</div>
-
+<!-- SweetAlert2 Dark (NO NEON / NO GLOW) -->
 <style>
-/* minimal modal styles to match theme */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
+.swal2-popup {
+    background: rgba(10, 10, 20, 0.95) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65) !important; /* clean shadow */
+    color: #e5e7eb !important;
+    backdrop-filter: blur(8px);
 }
-.modal {
-    padding: 24px;
-    border-radius: 12px;
-    width: 92%;
-    max-width: 520px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+
+.swal2-title {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.swal2-html-container {
+    color: #cbd5e1 !important;
+}
+
+/* Flat icon (no neon) */
+.swal2-icon.swal2-warning,
+.swal2-icon.swal2-question {
+    border-color: #9ca3af !important;
+    color: #9ca3af !important;
+}
+
+.swal2-confirm {
+    background: #f59e0b !important;
+    color: #000 !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+}
+
+.swal2-cancel {
+    background: #374151 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+.swal2-confirm:focus,
+.swal2-cancel:focus {
+    box-shadow: none !important;
 }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // ---------- Profile Save Confirmation Modal ----------
-    const openProfileBtn = document.getElementById('openConfirmProfileModal');
-    const profileModal = document.getElementById('confirmProfileModal');
-    const closeProfileBtn = document.getElementById('closeConfirmProfile');
-    const cancelProfileBtn = document.getElementById('cancelConfirmProfile');
-    const confirmProfileBtn = document.getElementById('confirmSaveProfile');
-    const profileForm = document.getElementById('profileForm');
+/* PASSWORD MATCH VALIDATION */
+const newPwd = document.getElementById('new_password');
+const confirmPwd = document.getElementById('confirm_new_password');
 
-    function showProfileModal() {
-        if (profileModal) profileModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+function validatePasswordMatch() {
+    if (newPwd.value !== confirmPwd.value) {
+        confirmPwd.setCustomValidity('Passwords do not match');
+    } else {
+        confirmPwd.setCustomValidity('');
     }
-    function hideProfileModal() {
-        if (profileModal) profileModal.style.display = 'none';
-        document.body.style.overflow = '';
-    }
+}
 
-    if (openProfileBtn) {
-        openProfileBtn.addEventListener('click', function () {
-            if (!profileForm) { showProfileModal(); return; }
-            if (!profileForm.checkValidity()) {
-                profileForm.reportValidity();
-                return;
-            }
-            showProfileModal();
-        });
+if (newPwd && confirmPwd) {
+    newPwd.addEventListener('input', validatePasswordMatch);
+    confirmPwd.addEventListener('input', validatePasswordMatch);
+}
+
+/* PROFILE SAVE CONFIRMATION */
+function confirmProfileSave() {
+    const form = document.getElementById('profileForm');
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
     }
 
-    if (closeProfileBtn) closeProfileBtn.addEventListener('click', hideProfileModal);
-    if (cancelProfileBtn) cancelProfileBtn.addEventListener('click', hideProfileModal);
-
-    if (confirmProfileBtn) {
-        confirmProfileBtn.addEventListener('click', function () {
-            hideProfileModal();
-            if (profileForm) profileForm.submit();
-        });
-    }
-
-    // ---------- Password Confirmation Modal (existing) ----------
-    // Password validation
-    const newPwd = document.getElementById('new_password');
-    const confirmPwd = document.getElementById('confirm_new_password');
-
-    function validatePasswordMatch() {
-        if (!newPwd || !confirmPwd) return;
-        if (newPwd.value !== confirmPwd.value) {
-            confirmPwd.setCustomValidity('Passwords do not match');
-        } else {
-            confirmPwd.setCustomValidity('');
-        }
-    }
-
-    if (newPwd) newPwd.addEventListener('input', validatePasswordMatch);
-    if (confirmPwd) confirmPwd.addEventListener('input', validatePasswordMatch);
-
-    const openPwdBtn = document.getElementById('openChangePasswordModal');
-    const pwdModal = document.getElementById('confirmPasswordModal');
-    const closePwdBtn = document.getElementById('closeConfirmPassword');
-    const cancelPwdBtn = document.getElementById('cancelConfirmPassword');
-    const confirmPwdBtn = document.getElementById('confirmChangePassword');
-    const passwordForm = document.getElementById('passwordForm');
-
-    // Ensure password modal hidden initially
-    if (pwdModal) pwdModal.style.display = 'none';
-
-    function showPwdModal() {
-        if (pwdModal) pwdModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-    function hidePwdModal() {
-        if (pwdModal) pwdModal.style.display = 'none';
-        document.body.style.overflow = '';
-    }
-
-    if (openPwdBtn) openPwdBtn.addEventListener('click', function () {
-        if (!passwordForm) { showPwdModal(); return; }
-        if (passwordForm.checkValidity()) {
-            showPwdModal();
-        } else {
-            passwordForm.reportValidity();
+    Swal.fire({
+        title: 'Confirm Changes',
+        text: 'Are you sure you want to save your profile changes?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, save changes',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
         }
     });
+}
 
-    if (closePwdBtn) closePwdBtn.addEventListener('click', hidePwdModal);
-    if (cancelPwdBtn) cancelPwdBtn.addEventListener('click', hidePwdModal);
+/* PASSWORD CHANGE CONFIRMATION */
+function confirmPasswordChange() {
+    const form = document.getElementById('passwordForm');
 
-    if (confirmPwdBtn) confirmPwdBtn.addEventListener('click', function () {
-        if (passwordForm) {
-            hidePwdModal();
-            passwordForm.submit();
-        }
-    });
-
-    // Close any modal with Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            hideProfileModal();
-            hidePwdModal();
-        }
-    });
-
-    // Optional: auto-open password modal if server requested it
-    try {
-        if (window.SHOULD_OPEN_PASSWORD_MODAL === true) {
-            setTimeout(function(){ if (passwordForm) showPwdModal(); }, 80);
-        }
-    } catch (e) {
-        // ignore
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
     }
-});
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'You are about to change your password.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, change password',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+}
 </script>
 {% endblock %}

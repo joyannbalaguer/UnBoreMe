@@ -109,103 +109,105 @@ class User:
             return False
         return bcrypt.check_password_hash(user['password_hash'], password)
 
-
 class OTPToken:
     """OTP Token model - handles email verification tokens"""
-    
+
     @staticmethod
     def generate_token():
-        """Generate a secure random token"""
-        return secrets.token_urlsafe(32)
-    
+        """Generate a 6-digit numeric OTP"""
+        return f"{secrets.randbelow(1_000_000):06d}"
+
     @staticmethod
     def hash_token(token):
         """Hash token for storage"""
         return hashlib.sha256(token.encode()).hexdigest()
-    
+
     @staticmethod
     def create(email, expiry_minutes=10):
         """Create new OTP token"""
         token = OTPToken.generate_token()
         token_hash = OTPToken.hash_token(token)
         expires_at = datetime.now() + timedelta(minutes=expiry_minutes)
-        
+
         query = """
-            INSERT INTO otp_tokens (email, token_hash, created_at, expires_at, last_sent_at, attempts)
+            INSERT INTO otp_tokens
+            (email, token_hash, created_at, expires_at, last_sent_at, attempts)
             VALUES (%s, %s, NOW(), %s, NOW(), 0)
         """
         token_id = insert(query, (email, token_hash, expires_at))
         return token, token_id
-    
+
     @staticmethod
     def get_by_email(email):
         """Get latest OTP token for email"""
         query = """
-            SELECT * FROM otp_tokens 
-            WHERE email = %s 
-            ORDER BY created_at DESC 
+            SELECT * FROM otp_tokens
+            WHERE email = %s
+            ORDER BY created_at DESC
             LIMIT 1
         """
         return get_one(query, (email,))
-    
+
     @staticmethod
     def verify(email, token):
         """Verify OTP token"""
         token_hash = OTPToken.hash_token(token)
         query = """
-            SELECT * FROM otp_tokens 
-            WHERE email = %s AND token_hash = %s 
-            AND expires_at > NOW()
-            ORDER BY created_at DESC 
+            SELECT * FROM otp_tokens
+            WHERE email = %s
+              AND token_hash = %s
+              AND expires_at > NOW()
+            ORDER BY created_at DESC
             LIMIT 1
         """
-        result = get_one(query, (email, token_hash))
-        return result is not None
-    
+        return get_one(query, (email, token_hash)) is not None
+
     @staticmethod
     def increment_attempts(token_id):
         """Increment failed attempts counter"""
         query = "UPDATE otp_tokens SET attempts = attempts + 1 WHERE id = %s"
         return update(query, (token_id,))
-    
+
     @staticmethod
     def update_last_sent(token_id):
         """Update last sent timestamp"""
         query = "UPDATE otp_tokens SET last_sent_at = NOW() WHERE id = %s"
         return update(query, (token_id,))
-    
+
     @staticmethod
     def check_resend_cooldown(email, cooldown_minutes=5):
         """Check if resend cooldown has passed"""
         query = """
-            SELECT last_sent_at FROM otp_tokens 
-            WHERE email = %s 
-            ORDER BY created_at DESC 
+            SELECT last_sent_at FROM otp_tokens
+            WHERE email = %s
+            ORDER BY created_at DESC
             LIMIT 1
         """
         result = get_one(query, (email,))
         if not result or not result['last_sent_at']:
             return True, 0
-        
+
         time_elapsed = datetime.now() - result['last_sent_at']
         cooldown = timedelta(minutes=cooldown_minutes)
-        
+
         if time_elapsed < cooldown:
             remaining = (cooldown - time_elapsed).total_seconds()
             return False, int(remaining)
-        
+
         return True, 0
-    
+
     @staticmethod
     def check_hourly_limit(email, limit=3):
         """Check if hourly send limit exceeded"""
         query = """
-            SELECT COUNT(*) as count FROM otp_tokens 
-            WHERE email = %s AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
+            SELECT COUNT(*) AS count
+            FROM otp_tokens
+            WHERE email = %s
+              AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
         """
         result = get_one(query, (email,))
         return result['count'] < limit
-    
+
     @staticmethod
     def delete_by_email(email):
         """Delete all OTP tokens for email"""
@@ -403,3 +405,53 @@ class AuditLog:
             LIMIT %s
         """
         return get_all(query, (admin_id, limit))
+
+
+class GameScore:
+    """GameScore model - manages user game scores"""
+    
+    @staticmethod
+    def save_score(user_id, game_id, score):
+        """Save or update user's score for a game"""
+        query = """
+            INSERT INTO game_scores (user_id, game_id, score, created_at)
+            VALUES (%s, %s, %s, NOW())
+            ON DUPLICATE KEY UPDATE 
+                score = VALUES(score),
+                updated_at = NOW()
+        """
+        return insert(query, (user_id, game_id, score))
+    
+    @staticmethod
+    def get_user_score(user_id, game_id):
+        """Get user's score for a specific game"""
+        query = """
+            SELECT * FROM game_scores
+            WHERE user_id = %s AND game_id = %s
+        """
+        return get_one(query, (user_id, game_id))
+    
+    @staticmethod
+    def get_user_scores(user_id):
+        """Get all scores for a user"""
+        query = """
+            SELECT gs.*, g.name as game_name, g.slug as game_slug
+            FROM game_scores gs
+            JOIN games g ON gs.game_id = g.id
+            WHERE gs.user_id = %s
+            ORDER BY gs.score DESC
+        """
+        return get_all(query, (user_id,))
+    
+    @staticmethod
+    def get_top_scores(game_id, limit=10):
+        """Get top scores for a game"""
+        query = """
+            SELECT gs.*, u.username, u.firstname, u.lastname
+            FROM game_scores gs
+            JOIN users u ON gs.user_id = u.id
+            WHERE gs.game_id = %s
+            ORDER BY gs.score DESC
+            LIMIT %s
+        """
+        return get_all(query, (game_id, limit))

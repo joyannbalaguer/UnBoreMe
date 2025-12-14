@@ -7,6 +7,11 @@ Encapsulation, Abstraction, Inheritance, Polymorphism
 import pygame
 import random
 import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from score_api import send_score_to_api, get_user_and_game_from_env
 
 pygame.init()
 
@@ -272,6 +277,10 @@ class SpaceInvadersGame:
     # ------------------------------------------------------
     def game_over(self):
         self.game_running = False
+        # Send score to API
+        user_id, game_id = get_user_and_game_from_env()
+        if user_id and game_id:
+            send_score_to_api(user_id, game_id, self.score)
 
     # ------------------------------------------------------
     # DRAWING — polymorphism: objects call .draw() differently

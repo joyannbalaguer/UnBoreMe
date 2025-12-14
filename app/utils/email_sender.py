@@ -6,6 +6,10 @@ from flask import current_app, render_template
 from flask_mail import Message
 from app.extensions import mail
 from app.models import OTPToken
+import secrets
+import hashlib
+from datetime import datetime, timedelta
+from app.database import insert
 
 
 def send_otp_email(email, token):
@@ -14,19 +18,15 @@ def send_otp_email(email, token):
     
     Args:
         email: Recipient email address
-        token: OTP token to send
+        token: 6-digit numeric OTP token to send
     
     Returns:
         tuple: (success: bool, message: str)
     """
     try:
-        # Create verification URL (for web-based verification)
-        # In production, use actual domain
-        verification_url = f"http://localhost:5000/auth/verify-email?token={token}&email={email}"
-        
         # Create email message
         msg = Message(
-            subject="Email Verification - Final Project",
+            subject="Email Verification - UnBoreMe",
             recipients=[email],
             sender=current_app.config['MAIL_DEFAULT_SENDER']
         )
@@ -37,12 +37,13 @@ Hello,
 
 Thank you for registering! Please verify your email address to activate your account.
 
-Your verification token is: {token}
+Your 6-digit verification code is:
 
-Or click the link below:
-{verification_url}
+{token}
 
-This token will expire in {current_app.config['OTP_EXPIRY_MINUTES']} minutes.
+Please enter this code on the verification page to complete your registration.
+
+This code will expire in {current_app.config['OTP_EXPIRY_MINUTES']} minutes.
 
 If you did not request this, please ignore this email.
 
@@ -61,35 +62,39 @@ Final Project Team
         .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                    color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
         .content {{ background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }}
-        .token {{ background: white; padding: 15px; margin: 20px 0; 
-                 font-size: 24px; font-weight: bold; text-align: center; 
-                 letter-spacing: 3px; border-radius: 8px; color: #667eea; 
-                 border: 2px dashed #667eea; }}
-        .button {{ display: inline-block; background: #667eea; color: white; 
-                  padding: 12px 30px; text-decoration: none; border-radius: 8px; 
-                  margin: 20px 0; font-weight: bold; }}
+        .otp-code {{ background: white; padding: 25px; margin: 30px 0; 
+                     font-size: 36px; font-weight: bold; text-align: center; 
+                     letter-spacing: 8px; border-radius: 8px; color: #667eea; 
+                     border: 3px solid #667eea; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
         .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
-        .warning {{ color: #ef4444; font-size: 14px; margin-top: 20px; }}
+        .warning {{ color: #ef4444; font-size: 14px; margin-top: 20px; 
+                   background: #fee2e2; padding: 15px; border-radius: 8px; }}
+        .instructions {{ background: #e0e7ff; padding: 15px; border-radius: 8px; 
+                        margin: 20px 0; color: #3730a3; }}
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Email Verification</h1>
+            <h1>✉️ Email Verification</h1>
         </div>
         <div class="content">
             <p>Hello,</p>
             <p>Thank you for registering! Please verify your email address to activate your account.</p>
             
-            <div class="token">{token}</div>
+            <div class="instructions">
+                <strong>📋 Your 6-digit verification code:</strong>
+            </div>
             
-            <p style="text-align: center;">
-                <a href="{verification_url}" class="button">Verify Email</a>
+            <div class="otp-code">{token}</div>
+            
+            <p style="text-align: center; font-size: 14px; color: #6b7280;">
+                Enter this code on the verification page to complete your registration.
             </p>
             
-            <p class="warning">
-                ⚠️ This token will expire in {current_app.config['OTP_EXPIRY_MINUTES']} minutes.
-            </p>
+            <div class="warning">
+                ⚠️ <strong>Important:</strong> This code will expire in {current_app.config['OTP_EXPIRY_MINUTES']} minutes.
+            </div>
             
             <p>If you did not request this verification, please ignore this email.</p>
         </div>
@@ -134,11 +139,23 @@ def send_otp_with_checks(email):
     if not within_limit:
         return False, f"Maximum {hourly_limit} verification emails per hour exceeded. Please try again later.", 0
     
-    # Generate and send OTP
+    # Generate 6-digit numeric OTP
     expiry_minutes = current_app.config['OTP_EXPIRY_MINUTES']
-    token, token_id = OTPToken.create(email, expiry_minutes)
+    otp_code = str(secrets.randbelow(1000000)).zfill(6)  # Generate 6-digit numeric OTP
     
-    success, message = send_otp_email(email, token)
+    # Hash the OTP for storage
+    token_hash = hashlib.sha256(otp_code.encode()).hexdigest()
+    expires_at = datetime.now() + timedelta(minutes=expiry_minutes)
+    
+    # Store OTP in database
+    query = """
+        INSERT INTO otp_tokens (email, token_hash, created_at, expires_at, last_sent_at, attempts)
+        VALUES (%s, %s, NOW(), %s, NOW(), 0)
+    """
+    token_id = insert(query, (email, token_hash, expires_at))
+    
+    # Send OTP email with 6-digit code
+    success, message = send_otp_email(email, otp_code)
     
     if success:
         # Update last_sent timestamp
@@ -148,22 +165,20 @@ def send_otp_with_checks(email):
         return False, message, 0
 
 
-def send_password_reset_email(email, reset_token):
+def send_password_reset_email(email, otp_code):
     """
-    Send password reset email
+    Send password reset email with 6-digit OTP
     
     Args:
         email: Recipient email address
-        reset_token: Password reset token
+        otp_code: 6-digit numeric OTP code
     
     Returns:
         tuple: (success: bool, message: str)
     """
     try:
-        reset_url = f"http://localhost:5000/auth/reset-password?token={reset_token}&email={email}"
-        
         msg = Message(
-            subject="Password Reset Request - Final Project",
+            subject="Password Reset Request - UnBoreMe",
             recipients=[email],
             sender=current_app.config['MAIL_DEFAULT_SENDER']
         )
@@ -173,12 +188,13 @@ Hello,
 
 You requested a password reset for your account.
 
-Your reset token is: {reset_token}
+Your 6-digit password reset code is:
 
-Or click the link below:
-{reset_url}
+{otp_code}
 
-This token will expire in 30 minutes.
+Please enter this code on the password reset page to continue.
+
+This code will expire in 30 minutes.
 
 If you did not request this, please ignore this email.
 
@@ -196,15 +212,15 @@ Final Project Team
         .header {{ background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); 
                    color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
         .content {{ background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }}
-        .token {{ background: white; padding: 15px; margin: 20px 0; 
-                 font-size: 20px; font-weight: bold; text-align: center; 
-                 letter-spacing: 2px; border-radius: 8px; color: #ef4444; 
-                 border: 2px dashed #ef4444; }}
-        .button {{ display: inline-block; background: #ef4444; color: white; 
-                  padding: 12px 30px; text-decoration: none; border-radius: 8px; 
-                  margin: 20px 0; font-weight: bold; }}
+        .otp-code {{ background: white; padding: 25px; margin: 30px 0; 
+                     font-size: 36px; font-weight: bold; text-align: center; 
+                     letter-spacing: 8px; border-radius: 8px; color: #ef4444; 
+                     border: 3px solid #ef4444; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
         .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
-        .warning {{ color: #ef4444; font-size: 14px; margin-top: 20px; }}
+        .warning {{ color: #ef4444; font-size: 14px; margin-top: 20px; 
+                   background: #fee2e2; padding: 15px; border-radius: 8px; }}
+        .instructions {{ background: #fef3c7; padding: 15px; border-radius: 8px; 
+                        margin: 20px 0; color: #78350f; }}
     </style>
 </head>
 <body>
@@ -216,15 +232,19 @@ Final Project Team
             <p>Hello,</p>
             <p>You requested a password reset for your account.</p>
             
-            <div class="token">{reset_token}</div>
+            <div class="instructions">
+                <strong>🔑 Your 6-digit password reset code:</strong>
+            </div>
             
-            <p style="text-align: center;">
-                <a href="{reset_url}" class="button">Reset Password</a>
+            <div class="otp-code">{otp_code}</div>
+            
+            <p style="text-align: center; font-size: 14px; color: #6b7280;">
+                Enter this code on the password reset page to continue.
             </p>
             
-            <p class="warning">
-                ⚠️ This token will expire in 30 minutes.
-            </p>
+            <div class="warning">
+                ⚠️ <strong>Important:</strong> This code will expire in 30 minutes.
+            </div>
             
             <p>If you did not request this reset, please ignore this email and your password will remain unchanged.</p>
         </div>

@@ -1,12 +1,19 @@
 """
 Pong Game - Pygame Version (OOP Enhanced)
 Classic pong game with AI opponent
-Refactor: adds GameObject base, Paddle and Ball inherit and override update()/draw()
+Score is saved to database on game over (player score only)
 """
 
 import pygame
 import random
 import sys
+import os
+
+# ----------------------------
+# SCORE API IMPORT (IMPORTANT)
+# ----------------------------
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from score_api import send_score_to_api, get_user_and_game_from_env
 
 # Initialize Pygame
 pygame.init()
@@ -26,20 +33,18 @@ TEXT_COLOR = (255, 255, 255)
 
 
 # ----------------------------
-# Base class for polymorphism
+# Base class
 # ----------------------------
 class GameObject:
     def update(self, *args, **kwargs):
-        """Optional hook; subclasses override when they need updates."""
         pass
 
     def draw(self, screen):
-        """Subclasses must implement drawing."""
-        raise NotImplementedError("Subclasses must implement draw()")
+        raise NotImplementedError
 
 
 # ----------------------------
-# Paddle (inherits GameObject)
+# Paddle
 # ----------------------------
 class Paddle(GameObject):
     def __init__(self, x, y, width, height, color):
@@ -57,7 +62,6 @@ class Paddle(GameObject):
         self.y = min(canvas_height - self.height, self.y + self.speed)
 
     def ai_update(self, ball, canvas_height):
-        """Simple AI: follow the ball's y position."""
         paddle_center = self.y + self.height / 2
         ball_center = ball.y
 
@@ -67,16 +71,9 @@ class Paddle(GameObject):
             self.move_up()
 
     def update(self, keys=None, canvas_height=None, ball=None):
-        """
-        Update signature supports:
-         - player control: update(keys=keys, canvas_height=height)
-         - AI control: update(ball=ball, canvas_height=height)
-        """
         if ball is not None:
-            # AI mode
             self.ai_update(ball, canvas_height)
         elif keys is not None:
-            # Player control - expects keys mapping and canvas height
             if keys[pygame.K_UP] or keys[pygame.K_w]:
                 self.move_up()
             if keys[pygame.K_DOWN] or keys[pygame.K_s]:
@@ -85,12 +82,9 @@ class Paddle(GameObject):
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
 
-    def get_rect(self):
-        return pygame.Rect(self.x, self.y, self.width, self.height)
-
 
 # ----------------------------
-# Ball (inherits GameObject)
+# Ball
 # ----------------------------
 class Ball(GameObject):
     def __init__(self, x, y, radius):
@@ -105,44 +99,23 @@ class Ball(GameObject):
         self.x += self.speed_x
         self.y += self.speed_y
 
-        # Top and bottom wall collision
         if self.y - self.radius <= 0 or self.y + self.radius >= canvas_height:
             self.speed_y = -self.speed_y
 
     def reset(self, canvas_width, canvas_height):
         self.x = canvas_width / 2
         self.y = canvas_height / 2
-        # Reverse horizontal direction so serve alternates
-        self.speed_x = -self.speed_x if hasattr(self, "speed_x") else -4.0
+        self.speed_x = -self.speed_x
         self.speed_y = random.choice([4.0, -4.0])
 
     def check_paddle_collision(self, paddle):
-        ball_left = self.x - self.radius
-        ball_right = self.x + self.radius
-        ball_top = self.y - self.radius
-        ball_bottom = self.y + self.radius
-
-        paddle_left = paddle.x
-        paddle_right = paddle.x + paddle.width
-        paddle_top = paddle.y
-        paddle_bottom = paddle.y + paddle.height
-
-        if (ball_right >= paddle_left and ball_left <= paddle_right and
-                ball_bottom >= paddle_top and ball_top <= paddle_bottom):
-
-            # Calculate hit position for spin effect (0..1)
-            hit_pos = (self.y - paddle.y) / paddle.height
-            # Map hit_pos to vertical speed (center -> small, edges -> larger)
-            self.speed_y = (hit_pos - 0.5) * 10.0
-
-            # Reverse horizontal direction
+        if (
+            self.x - self.radius <= paddle.x + paddle.width
+            and self.x + self.radius >= paddle.x
+            and self.y + self.radius >= paddle.y
+            and self.y - self.radius <= paddle.y + paddle.height
+        ):
             self.speed_x = -self.speed_x
-
-            # Increase horizontal speed slightly but clamp to max
-            self.speed_x *= 1.05
-            sign = 1 if self.speed_x > 0 else -1
-            self.speed_x = sign * min(abs(self.speed_x), self.max_speed)
-
             return True
         return False
 
@@ -150,18 +123,16 @@ class Ball(GameObject):
         return self.x < 0 or self.x > canvas_width
 
     def scored_on(self):
-        return 'right' if self.x < 0 else 'left'
+        return "right" if self.x < 0 else "left"
 
     def draw(self, screen):
-        pygame.draw.circle(screen, BALL_COLOR, (int(self.x), int(self.y)), self.radius)
-
-    def get_rect(self):
-        return pygame.Rect(int(self.x - self.radius), int(self.y - self.radius),
-                           int(self.radius * 2), int(self.radius * 2))
+        pygame.draw.circle(
+            screen, BALL_COLOR, (int(self.x), int(self.y)), self.radius
+        )
 
 
 # ----------------------------
-# PongGame orchestrator
+# Pong Game
 # ----------------------------
 class PongGame:
     def __init__(self):
@@ -169,191 +140,94 @@ class PongGame:
         pygame.display.set_caption("Pong")
         self.clock = pygame.time.Clock()
 
-        # Game objects
-        paddle_width = 10
         paddle_height = 80
-
-        self.left_paddle = Paddle(20, WINDOW_HEIGHT // 2 - paddle_height // 2,
-                                  paddle_width, paddle_height, PADDLE_LEFT_COLOR)
-        self.right_paddle = Paddle(WINDOW_WIDTH - 30, WINDOW_HEIGHT // 2 - paddle_height // 2,
-                                   paddle_width, paddle_height, PADDLE_RIGHT_COLOR)
+        self.left_paddle = Paddle(20, WINDOW_HEIGHT // 2 - 40, 10, paddle_height, PADDLE_LEFT_COLOR)
+        self.right_paddle = Paddle(WINDOW_WIDTH - 30, WINDOW_HEIGHT // 2 - 40, 10, paddle_height, PADDLE_RIGHT_COLOR)
         self.ball = Ball(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, 8)
 
-        # Game state
         self.score_left = 0
         self.score_right = 0
-        self.game_running = False
         self.win_score = 5
-        self.game_over = False
 
-        # Fonts
-        self.score_font = pygame.font.Font(None, 64)
-        self.title_font = pygame.font.Font(None, 64)
-        self.instruction_font = pygame.font.Font(None, 32)
-        self.ui_font = pygame.font.Font(None, 28)
+        self.game_running = False
+        self.game_over = False
+        self.score_saved = False  # IMPORTANT: prevents duplicate saves
+
+        self.font = pygame.font.Font(None, 48)
 
     def start(self):
         self.game_running = True
-        self.game_over = False
-
-    def reset(self):
-        self.score_left = 0
-        self.score_right = 0
-        self.game_running = False
-        self.game_over = False
-        self.ball.reset(WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.left_paddle.y = WINDOW_HEIGHT // 2 - self.left_paddle.height // 2
-        self.right_paddle.y = WINDOW_HEIGHT // 2 - self.right_paddle.height // 2
 
     def update(self, keys):
         if not self.game_running or self.game_over:
             return
 
-        # Update paddles (player left, AI right) via polymorphic update()
         self.left_paddle.update(keys=keys, canvas_height=WINDOW_HEIGHT)
         self.right_paddle.update(ball=self.ball, canvas_height=WINDOW_HEIGHT)
-
-        # Update ball
         self.ball.update(WINDOW_WIDTH, WINDOW_HEIGHT)
 
-        # Check paddle collisions
         self.ball.check_paddle_collision(self.left_paddle)
         self.ball.check_paddle_collision(self.right_paddle)
 
-        # Check if ball is out of bounds (score)
         if self.ball.is_out_of_bounds(WINDOW_WIDTH):
-            scorer = self.ball.scored_on()
-            if scorer == 'left':
+            if self.ball.scored_on() == "left":
                 self.score_left += 1
             else:
                 self.score_right += 1
 
-            # Check for winner
             if self.score_left >= self.win_score or self.score_right >= self.win_score:
                 self.game_over = True
                 self.game_running = False
+                self.save_score()
                 return
 
-            # Reset ball (serve)
             self.ball.reset(WINDOW_WIDTH, WINDOW_HEIGHT)
 
-    def draw_center_line(self):
-        # Draw dashed center line
-        dash_height = 10
-        gap_height = 10
-        y = 0
-        while y < WINDOW_HEIGHT:
-            pygame.draw.rect(self.screen, CENTER_LINE_COLOR,
-                             (WINDOW_WIDTH // 2 - 1, y, 2, dash_height))
-            y += dash_height + gap_height
+    # ----------------------------
+    # SCORE SAVING LOGIC
+    # ----------------------------
+    def save_score(self):
+        if self.score_saved:
+            return
 
-    def draw_start_screen(self):
+        user_id, game_id = get_user_and_game_from_env()
+        if user_id and game_id:
+            send_score_to_api(user_id, game_id, self.score_left)
+            print(f"✓ Pong score saved: {self.score_left}")
+
+        self.score_saved = True
+
+    def draw(self):
         self.screen.fill(BACKGROUND_COLOR)
-        self.draw_center_line()
 
-        # Title
-        title = self.title_font.render('PONG', True, TEXT_COLOR)
-        title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 100))
-        self.screen.blit(title, title_rect)
-
-        # Instructions
-        instructions = [
-            'Player vs AI',
-            '',
-            'Use Arrow Keys or W/S to move',
-            f'First to {self.win_score} points wins!',
-            '',
-            'Press SPACE to Start'
-        ]
-
-        y_offset = WINDOW_HEIGHT // 2 - 20
-        for instruction in instructions:
-            if instruction:
-                text = self.instruction_font.render(instruction, True, TEXT_COLOR)
-                text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, y_offset))
-                self.screen.blit(text, text_rect)
-            y_offset += 40
-
-    def draw_game(self):
-        self.screen.fill(BACKGROUND_COLOR)
-        self.draw_center_line()
-
-        # Draw game objects (polymorphic draw)
         self.left_paddle.draw(self.screen)
         self.right_paddle.draw(self.screen)
         self.ball.draw(self.screen)
 
-        # Draw scores
-        left_score = self.score_font.render(str(self.score_left), True, TEXT_COLOR)
-        left_rect = left_score.get_rect(center=(WINDOW_WIDTH // 4, 60))
-        self.screen.blit(left_score, left_rect)
+        left = self.font.render(str(self.score_left), True, TEXT_COLOR)
+        right = self.font.render(str(self.score_right), True, TEXT_COLOR)
 
-        right_score = self.score_font.render(str(self.score_right), True, TEXT_COLOR)
-        right_rect = right_score.get_rect(center=(WINDOW_WIDTH * 3 // 4, 60))
-        self.screen.blit(right_score, right_rect)
+        self.screen.blit(left, (WINDOW_WIDTH // 4, 20))
+        self.screen.blit(right, (WINDOW_WIDTH * 3 // 4, 20))
 
-        # Draw labels
-        player_label = self.ui_font.render('Player', True, PADDLE_LEFT_COLOR)
-        player_rect = player_label.get_rect(center=(WINDOW_WIDTH // 4, 100))
-        self.screen.blit(player_label, player_rect)
-
-        ai_label = self.ui_font.render('AI', True, PADDLE_RIGHT_COLOR)
-        ai_rect = ai_label.get_rect(center=(WINDOW_WIDTH * 3 // 4, 100))
-        self.screen.blit(ai_label, ai_rect)
-
-    def draw_game_over(self):
-        # Semi-transparent overlay
-        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-        overlay.set_alpha(180)
-        overlay.fill((0, 0, 0))
-        self.screen.blit(overlay, (0, 0))
-
-        # Winner text
-        winner = 'PLAYER WINS!' if self.score_left >= self.win_score else 'AI WINS!'
-        winner_text = self.title_font.render(winner, True, TEXT_COLOR)
-        winner_rect = winner_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
-        self.screen.blit(winner_text, winner_rect)
-
-        # Final score
-        score_text = self.instruction_font.render(
-            f'Final Score: {self.score_left} - {self.score_right}',
-            True, TEXT_COLOR
-        )
-        score_rect = score_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 20))
-        self.screen.blit(score_text, score_rect)
-
-        # Restart prompt
-        restart_text = self.instruction_font.render('Press R to Restart', True, TEXT_COLOR)
-        restart_rect = restart_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 70))
-        self.screen.blit(restart_text, restart_rect)
+        if self.game_over:
+            text = self.font.render("GAME OVER", True, TEXT_COLOR)
+            self.screen.blit(text, text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
 
     def run(self):
         running = True
-
         while running:
             keys = pygame.key.get_pressed()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-                    elif event.key == pygame.K_SPACE:
-                        if not self.game_running and not self.game_over:
-                            self.start()
-                    elif event.key == pygame.K_r:
-                        if self.game_over:
-                            self.reset()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    if not self.game_running and not self.game_over:
+                        self.start()
 
             self.update(keys)
-
-            if not self.game_running and not self.game_over:
-                self.draw_start_screen()
-            else:
-                self.draw_game()
-                if self.game_over:
-                    self.draw_game_over()
+            self.draw()
 
             pygame.display.flip()
             self.clock.tick(FPS)
@@ -362,5 +236,5 @@ class PongGame:
         sys.exit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     PongGame().run()

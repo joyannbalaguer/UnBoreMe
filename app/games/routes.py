@@ -3,8 +3,8 @@ Games Routes
 Game listing and access
 """
 
-from flask import Blueprint, render_template, redirect, url_for, flash, session, abort, current_app
-from app.models import Game, UserGame
+from flask import Blueprint, render_template, redirect, url_for, flash, session, abort, current_app, request, jsonify
+from app.models import Game, UserGame, GameScore
 from app.utils.decorators import login_required, active_required
 import subprocess
 import sys
@@ -137,6 +137,11 @@ def play_game(slug):
         flash("Game script not found on server. Contact admin.", "danger")
         return redirect(url_for('games.index'))
 
+    # Prepare environment variables with user_id and game_id for score saving
+    game_env = os.environ.copy()
+    game_env['GAME_USER_ID'] = str(session['user_id'])
+    game_env['GAME_ID'] = str(game['id'])
+    
     # Launch process
     try:
         if selected_script:
@@ -144,12 +149,14 @@ def play_game(slug):
             subprocess.Popen([sys.executable, selected_script],
                              stdout=subprocess.DEVNULL,
                              stderr=subprocess.DEVNULL,
+                             env=game_env,
                              close_fds=True)
         else:
             current_app.logger.info("Launching launcher.py with arg: %s", folder)
             subprocess.Popen([sys.executable, launcher_path, folder],
                              stdout=subprocess.DEVNULL,
                              stderr=subprocess.DEVNULL,
+                             env=game_env,
                              close_fds=True)
     except Exception as e:
         current_app.logger.exception("Failed to spawn game process")
@@ -160,3 +167,73 @@ def play_game(slug):
     display_name = game['name'] if isinstance(game, dict) and 'name' in game else getattr(game, "name", slug)
     flash(f"{display_name} launched.", "success")
     return redirect(url_for('games.index'))
+
+
+@games_bp.route('/api/save-score', methods=['POST'])
+def save_score():
+    """
+    API endpoint to save game score from Pygame
+    Accepts JSON: {"user_id": int, "game_id": int, "score": int}
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or 'user_id' not in data or 'game_id' not in data or 'score' not in data:
+            return jsonify({
+                'success': False,
+                'message': 'Missing required fields: user_id, game_id, score'
+            }), 400
+        
+        user_id = int(data['user_id'])
+        game_id = int(data['game_id'])
+        score = int(data['score'])
+        
+        # Validate score is non-negative
+        if score < 0:
+            return jsonify({
+                'success': False,
+                'message': 'Score must be non-negative'
+            }), 400
+        
+        # Verify user exists
+        from app.models import User
+        user = User.get_by_id(user_id)
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': 'User not found'
+            }), 404
+        
+        # Verify game exists
+        game = Game.get_by_id(game_id)
+        if not game:
+            return jsonify({
+                'success': False,
+                'message': 'Game not found'
+            }), 404
+        
+        # Save score (insert or update)
+        GameScore.save_score(user_id, game_id, score)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Score saved successfully',
+            'data': {
+                'user_id': user_id,
+                'game_id': game_id,
+                'score': score
+            }
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({
+            'success': False,
+            'message': f'Invalid data type: {str(e)}'
+        }), 400
+    except Exception as e:
+        current_app.logger.exception("Error saving score")
+        return jsonify({
+            'success': False,
+            'message': f'Internal server error: {str(e)}'
+        }), 500
