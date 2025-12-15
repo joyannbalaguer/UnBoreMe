@@ -8,7 +8,9 @@
         <div class="blog-header">
             <h1 class="neon-text">My Blog Posts</h1>
             <p>Manage your content</p>
-            <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary glow">Create New Post</a>
+            <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary glow">
+                Create New Post
+            </a>
         </div>
 
         <div class="blog-actions">
@@ -19,37 +21,66 @@
         <div class="posts-grid">
             {% if posts %}
                 {% for post in posts %}
-                    <div class="post-card glass animate-fade-in">
-                        <div class="post-card-header">
-                            <h3>{{ post.title }}</h3>
-                            <div class="post-status">
-                                <span class="badge badge-success">Published</span>
-                            </div>
-                        </div>
-                        <div class="post-card-body">
-                            <p>{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</p>
-                        </div>
-                        <div class="post-card-footer">
-                            <span class="post-date">{{ post.created_at.strftime('%B %d, %Y') }}</span>
-                            <div class="post-actions">
-                                <a href="{{ url_for('blog.view_post', post_id=post.id) }}" class="btn btn-sm btn-primary">View</a>
-                                <a href="{{ url_for('blog.edit_post', post_id=post.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                <form method="POST" action="{{ url_for('blog.delete_post', post_id=post.id) }}" 
-                                      style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                <div class="post-card glass animate-fade-in">
+                    <div class="post-card-header">
+                        <h3>{{ post.title }}</h3>
+                        <span class="badge badge-success">Published</span>
+                    </div>
+
+                    <div class="post-card-body">
+                        <p>
+                            {{ post.content[:200] }}
+                            {% if post.content|length > 200 %}...{% endif %}
+                        </p>
+                    </div>
+
+                    <div class="post-card-footer">
+                        <span class="post-date">
+                            {{ post.created_at.strftime('%B %d, %Y') }}
+                        </span>
+
+                        <div class="post-actions">
+                            <a href="{{ url_for('blog.view_post', post_id=post.id) }}"
+                               class="btn btn-sm btn-primary">
+                                View
+                            </a>
+
+                            {% if session.get('user_id') == post.user_id %}
+                                <!-- EDIT -->
+                                <button
+                                    class="btn btn-sm btn-warning"
+                                    onclick="confirmEditPost('{{ url_for('blog.edit_post', post_id=post.id) }}')">
+                                    Edit
+                                </button>
+
+                                <!-- DELETE -->
+                                <form id="delete-form-{{ post.id }}"
+                                      method="POST"
+                                      action="{{ url_for('blog.delete_post', post_id=post.id) }}"
+                                      style="display:inline;">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="confirmDeletePost({{ post.id }})">
+                                        Delete
+                                    </button>
                                 </form>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
+                </div>
                 {% endfor %}
             {% else %}
                 <div class="empty-state glass">
                     <h3>You haven't created any posts yet</h3>
                     <p>Start sharing your gaming experiences!</p>
-                    <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary glow">Create Your First Post</a>
+                    <a href="{{ url_for('blog.create_post') }}" class="btn btn-primary glow">
+                        Create Your First Post
+                    </a>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
+
 {% endblock %}

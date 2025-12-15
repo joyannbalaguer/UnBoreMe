@@ -86,14 +86,54 @@ function updatePasswordStrength(inputId, indicatorId) {
     });
 }
 
-// Confirm dialog
-function confirmAction(message) {
-    return confirm(message || 'Are you sure you want to perform this action?');
+// Blog Post Delete Confirmation with SweetAlert2 (matches admin style)
+function confirmDeletePost(postId) {
+    Swal.fire({
+        title: 'Delete this post?',
+        text: 'This action is permanent and cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel',
+        background: '#12121a',
+        color: '#ffffff',
+        customClass: {
+            popup: 'swal2-popup-dark',
+            title: 'swal2-title-dark',
+            content: 'swal2-content-dark',
+            confirmButton: 'swal2-confirm-danger',
+            cancelButton: 'swal2-cancel-dark'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-' + postId).submit();
+        }
+    });
 }
 
-// Delete confirmation
-function confirmDelete(itemName) {
-    return confirm('Are you sure you want to delete "' + itemName + '"? This action cannot be undone.');
+// Blog Post Edit Confirmation with SweetAlert2 (matches admin style)
+function confirmEditPost(editUrl) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to edit this post?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, edit',
+        cancelButtonText: 'Cancel',
+        background: '#12121a',
+        color: '#ffffff',
+        customClass: {
+            popup: 'swal2-popup-dark',
+            title: 'swal2-title-dark',
+            content: 'swal2-content-dark',
+            confirmButton: 'swal2-confirm-dark',
+            cancelButton: 'swal2-cancel-dark'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = editUrl;
+        }
+    });
 }
 
 // Loading spinner

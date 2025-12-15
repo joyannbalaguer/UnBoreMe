@@ -2178,3 +2178,56 @@ canvas {
 .text-secondary { color: var(--text-secondary); }
 .text-danger { color: var(--danger-color); }
 .text-success { color: var(--success-color); }
+
+
+/* Ensure SweetAlert appears above everything */
+.swal2-container { 
+    z-index: 99999 !important; 
+}
+
+/* Dark theme popup */
+.swal2-popup.swal2-popup-dark {
+    background: #12121a !important;
+    color: #e9eef6 !important;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+}
+
+/* Title styling */
+.swal2-title-dark {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Content styling */
+.swal2-content-dark {
+    color: #dfe7ee !important;
+}
+
+/* Confirm button - warning/edit style */
+.swal2-confirm-dark {
+    background-color: #f0ad4e !important;
+    color: #111 !important;
+    border: none !important;
+}
+
+/* Confirm button - danger/delete style */
+.swal2-confirm-danger {
+    background-color: #ef4444 !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+/* Cancel button */
+.swal2-cancel-dark {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+/* Button hover effects */
+.swal2-confirm-dark:hover,
+.swal2-confirm-danger:hover,
+.swal2-cancel-dark:hover {
+    filter: brightness(0.95);
+}

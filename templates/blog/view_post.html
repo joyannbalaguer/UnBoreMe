@@ -15,14 +15,14 @@
                             <span class="post-date">{{ post.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
                         </div>
                     </div>
-                    {% if session.get('loggedin') and session.get('id') == post.user_id %}
+                    {% if session.get('loggedin') and session.get('user_id') == post.user_id %}
                         <div class="post-actions">
-                            <a href="{{ url_for('blog.edit_post', post_id=post.id) }}" class="btn btn-sm btn-warning">
+                            <button class="btn btn-sm btn-warning" onclick="confirmEditPost('{{ url_for('blog.edit_post', post_id=post.id) }}')">
                                 <span>✏️</span> Edit
-                            </a>
-                            <form method="POST" action="{{ url_for('blog.delete_post', post_id=post.id) }}" 
-                                  style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                <button type="submit" class="btn btn-sm btn-danger">
+                            </button>
+                            <form id="delete-form-{{ post.id }}" method="POST" action="{{ url_for('blog.delete_post', post_id=post.id) }}" 
+                                  style="display: inline;">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeletePost({{ post.id }})">
                                     <span>🗑️</span> Delete
                                 </button>
                             </form>

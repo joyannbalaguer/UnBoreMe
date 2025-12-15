@@ -11,9 +11,9 @@ blog_bp = Blueprint('blog', __name__)
 
 @blog_bp.route('/')
 def index():
-    """List all blog posts"""
+    """List all blog posts - GLOBAL blog, everyone can read"""
     posts = Post.get_all()
-    return render_template('blog/index.html', posts=posts)
+    return render_template('blog/posts.html', posts=posts)
 
 
 @blog_bp.route('/post/<int:post_id>')
@@ -116,6 +116,6 @@ def delete_post(post_id):
 @login_required
 @active_required
 def my_posts():
-    """View user's own blog posts"""
-    posts = Post.get_by_user(session['user_id'])
+    """View ALL blog posts - GLOBAL"""
+    posts = Post.get_all()
     return render_template('blog/my_posts.html', posts=posts)
