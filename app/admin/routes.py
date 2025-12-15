@@ -13,6 +13,7 @@ admin_bp = Blueprint('admin', __name__, template_folder='templates')
 # Use relative imports to reduce circular-import risk (module is inside package 'app')
 from ..models import User, Game, UserGame, AuditLog, Post
 from ..utils.decorators import login_required, active_required, admin_required
+from ..utils.validators import validate_profile_data
 
 
 @admin_bp.route('/', endpoint='dashboard')
@@ -131,19 +132,24 @@ def edit_user(user_id):
         return redirect(url_for('admin.users'))
 
     if request.method == 'POST':
-        firstname = request.form.get('firstname', '').strip()
-        middlename = request.form.get('middlename', '').strip()
-        lastname = request.form.get('lastname', '').strip()
-        birthday = request.form.get('birthday', '').strip()
-        contact = request.form.get('contact', '').strip()
-
-        # Validation
-        if not firstname or not lastname:
-            flash('First name and last name are required!', 'danger')
-            return render_template('admin/edit_user.html', user=user)
-
-        # Update user
-        if User.update_profile(user_id, firstname, middlename, lastname, birthday, contact):
+        # Validate profile data using shared validation
+        is_valid, field_errors, sanitized_data = validate_profile_data(request.form, require_password=False)
+        
+        if not is_valid:
+            # Show validation errors
+            for field, error in field_errors.items():
+                flash(error, 'danger')
+            return render_template('admin/edit_user.html', user=user, errors=field_errors)
+        
+        # Update user with sanitized data
+        if User.update_profile(
+            user_id,
+            sanitized_data['firstname'],
+            sanitized_data['middlename'],
+            sanitized_data['lastname'],
+            sanitized_data['birthday'],
+            sanitized_data['contact']
+        ):
             # Log action
             AuditLog.log(session['user_id'], 'USER_UPDATE', f"Updated user: {user.get('username')}")
             flash(f'User {user.get("username")} updated successfully!', 'success')

@@ -1,9 +1,3 @@
-"""
-Snake Game - Pygame Version (OOP Enhanced)
-Classic snake game using all 4 OOP pillars:
-Encapsulation, Abstraction, Inheritance, Polymorphism
-"""
-
 import pygame
 import random
 import json
@@ -38,10 +32,10 @@ LEFT = (-1, 0)
 RIGHT = (1, 0)
 
 
-# ==========================================================
+
 # OOP PILLAR #3: INHERITANCE + ABSTRACTION
 # Base class for all drawable game objects
-# ==========================================================
+
 class GameObject:
     def draw(self, screen):
         raise NotImplementedError("Subclasses must implement draw()")
@@ -50,9 +44,9 @@ class GameObject:
         pass  # optional override for objects that move
 
 
-# ==========================================================
+
 # Snake Class (inherits GameObject)
-# ==========================================================
+
 class Snake(GameObject):
     def __init__(self, x, y):
         self.body = []
@@ -119,9 +113,9 @@ class Snake(GameObject):
                                  (x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE), 1)
 
 
-# ==========================================================
+
 # Food Class (inherits GameObject)
-# ==========================================================
+
 class Food(GameObject):
     def __init__(self):
         self.position = None
@@ -144,9 +138,8 @@ class Food(GameObject):
                               CELL_SIZE - 2, CELL_SIZE - 2))
 
 
-# ==========================================================
 # Main Game Class (Encapsulation of entire game)
-# ==========================================================
+
 class SnakeGame:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))

@@ -1,9 +1,3 @@
-"""
-Flappy Bird Game - Pygame Version (OOP Enhanced)
-Classic flappy bird style game
-Refactor: adds GameObject base, Bird and Pipe inherit and override update()/draw()
-"""
-
 import pygame
 import random
 import json
@@ -37,9 +31,9 @@ TEXT_COLOR = (255, 255, 255)
 TEXT_OUTLINE = (0, 0, 0)
 
 
-# -------------------------
+
 # Base class for polymorphism
-# -------------------------
+
 class GameObject:
     def update(self, *args, **kwargs):
         """Optional: override in subclasses"""
@@ -50,9 +44,9 @@ class GameObject:
         raise NotImplementedError("Subclasses must implement draw()")
 
 
-# -------------------------
+
 # Bird class
-# -------------------------
+
 class Bird(GameObject):
     def __init__(self, x, y):
         self.x = x
@@ -104,9 +98,9 @@ class Bird(GameObject):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
 
-# -------------------------
+
 # Pipe class
-# -------------------------
+
 class Pipe(GameObject):
     def __init__(self, x, top_height, gap):
         self.x = x
@@ -156,10 +150,8 @@ class Pipe(GameObject):
     def is_off_screen(self):
         return self.x + self.width < 0
 
-
-# -------------------------
 # FlappyBirdGame orchestrator
-# -------------------------
+
 class FlappyBirdGame:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))

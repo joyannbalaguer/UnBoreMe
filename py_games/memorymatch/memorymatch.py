@@ -1,8 +1,3 @@
-"""
-Memory Match Game - Pygame Version (OOP Enhanced)
-Score saving integrated (Flask API)
-"""
-
 import pygame
 import random
 import sys

@@ -1,9 +1,3 @@
-"""
-Space Invaders Game - Pygame Version (OOP Enhanced)
-Uses all 4 OOP pillars:
-Encapsulation, Abstraction, Inheritance, Polymorphism
-"""
-
 import pygame
 import random
 import sys
@@ -34,9 +28,9 @@ ALIEN_COLORS = [
     (255, 255, 0)
 ]
 
-# ==========================================================
+
 # BASE CLASS — INHERITANCE + ABSTRACTION
-# ==========================================================
+
 class GameObject:
     def update(self):
         pass  # children override if needed
@@ -45,9 +39,9 @@ class GameObject:
         raise NotImplementedError("Subclasses must override draw()")
 
 
-# ==========================================================
+
 # PLAYER
-# ==========================================================
+
 class Player(GameObject):
     def __init__(self, x, y):
         self.x = x
@@ -70,9 +64,9 @@ class Player(GameObject):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
 
-# ==========================================================
+
 # BULLET
-# ==========================================================
+
 class Bullet(GameObject):
     def __init__(self, x, y, speed, color):
         self.x = x
@@ -95,9 +89,9 @@ class Bullet(GameObject):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
 
-# ==========================================================
+
 # ALIEN
-# ==========================================================
+
 class Alien(GameObject):
     def __init__(self, x, y, color):
         self.x = x
@@ -117,9 +111,8 @@ class Alien(GameObject):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
 
-# ==========================================================
 # MAIN GAME CLASS
-# ==========================================================
+
 class SpaceInvadersGame:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -147,9 +140,9 @@ class SpaceInvadersGame:
         self.instruction_font = pygame.font.Font(None, 24)
         self.pause_font = pygame.font.Font(None, 48)
 
-    # ------------------------------------------------------
+    
     # Alien Grid
-    # ------------------------------------------------------
+    
     def create_aliens(self):
         self.aliens = []
         rows = 4
@@ -164,9 +157,9 @@ class SpaceInvadersGame:
                 y = offset_y + r * (30 + padding)
                 self.aliens.append(Alien(x, y, ALIEN_COLORS[r]))
 
-    # ------------------------------------------------------
+    
     # Shoot Systems
-    # ------------------------------------------------------
+    
     def shoot(self):
         if self.bullet_cooldown <= 0:
             b = Bullet(self.player.x + self.player.width // 2 - 2, self.player.y, -7, BULLET_COLOR)
@@ -180,9 +173,9 @@ class SpaceInvadersGame:
             b = Bullet(shooter.x + shooter.width // 2 - 2, shooter.y + shooter.height, 5, ALIEN_BULLET_COLOR)
             self.alien_bullets.append(b)
 
-    # ------------------------------------------------------
+    
     # Game Flow
-    # ------------------------------------------------------
+    
     def start(self):
         self.game_running = True
         self.game_paused = False
@@ -206,9 +199,9 @@ class SpaceInvadersGame:
         self.alien_bullets = []
         self.create_aliens()
 
-    # ------------------------------------------------------
+    
     # UPDATE LOOP — demonstrates polymorphism via update()
-    # ------------------------------------------------------
+    
     def update(self, keys):
         if not self.game_running or self.game_paused:
             return
@@ -272,9 +265,9 @@ class SpaceInvadersGame:
         if not alive_aliens:
             self.next_level()
 
-    # ------------------------------------------------------
+    
     # Game Over
-    # ------------------------------------------------------
+    
     def game_over(self):
         self.game_running = False
         # Send score to API
@@ -282,9 +275,9 @@ class SpaceInvadersGame:
         if user_id and game_id:
             send_score_to_api(user_id, game_id, self.score)
 
-    # ------------------------------------------------------
+    
     # DRAWING — polymorphism: objects call .draw() differently
-    # ------------------------------------------------------
+    
     def draw_start_screen(self):
         self.screen.fill(BACKGROUND_COLOR)
         title = self.title_font.render("SPACE INVADERS", True, TEXT_COLOR)
@@ -361,9 +354,8 @@ class SpaceInvadersGame:
         rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 60))
         self.screen.blit(restart, rect)
 
-    # ------------------------------------------------------
     # MAIN LOOP
-    # ------------------------------------------------------
+    
     def run(self):
         running = True
         game_over_drawn = False
@@ -407,8 +399,5 @@ class SpaceInvadersGame:
         sys.exit()
 
 
-# ==========================================================
-# RUN GAME
-# ==========================================================
 if __name__ == "__main__":
     SpaceInvadersGame().run()

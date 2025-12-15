@@ -448,5 +448,3 @@ Developed as a comprehensive Flask learning project featuring:
 - 8 unique browser-based games
 
 ---
-
-**Enjoy building and gaming! 🎮**

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}View User - {{ user.username }}{% endblock %}
+{% block title %}View User - UnBoreMe{{ user.username }}{% endblock %}
 
 {% block content %}
 {% set viewing_self = (session.get('user_id') == user.id) %}
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
 
-  }); // end waitForSwal
+  }); 
 });
 </script>
 

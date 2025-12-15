@@ -1,7 +1,7 @@
 {# app/templates/admin/user.html #}
 {% extends "base.html" %}
 
-{% block title %}Manage Users{% endblock %}
+{% block title %}Manage Users - UnBoreMe{% endblock %}
 
 {% block content %}
 
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // submit the POST form
+                
                     form.submit();
                 }
             });
@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (q === 'inactive') return text.includes('inactive');
         if (q === 'admin') return text.includes('admin');
         if (q === 'user') {
-            // ensure 'admin' rows are not matched by 'user' (admin row text contains 'admin' but also 'user' might appear in other contexts)
+            
             if (text.includes('admin') && !text.includes('user')) return false;
             return text.includes('user');
         }
@@ -293,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <style>
-/* dark-friendly SweetAlert styling */
+/*SweetAlert styling */
 .swal2-popup-dark {
     background: #12121a !important;
     color: #e9eef6 !important;

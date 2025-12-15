@@ -1,17 +1,9 @@
-"""
-Pong Game - Pygame Version (OOP Enhanced)
-Classic pong game with AI opponent
-Score is saved to database on game over (player score only)
-"""
-
 import pygame
 import random
 import sys
 import os
 
-# ----------------------------
 # SCORE API IMPORT (IMPORTANT)
-# ----------------------------
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from score_api import send_score_to_api, get_user_and_game_from_env
 
@@ -32,9 +24,9 @@ BALL_COLOR = (0, 217, 255)
 TEXT_COLOR = (255, 255, 255)
 
 
-# ----------------------------
+
 # Base class
-# ----------------------------
+
 class GameObject:
     def update(self, *args, **kwargs):
         pass
@@ -43,9 +35,9 @@ class GameObject:
         raise NotImplementedError
 
 
-# ----------------------------
+
 # Paddle
-# ----------------------------
+
 class Paddle(GameObject):
     def __init__(self, x, y, width, height, color):
         self.x = x
@@ -83,9 +75,9 @@ class Paddle(GameObject):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
 
 
-# ----------------------------
+
 # Ball
-# ----------------------------
+
 class Ball(GameObject):
     def __init__(self, x, y, radius):
         self.x = x
@@ -131,9 +123,9 @@ class Ball(GameObject):
         )
 
 
-# ----------------------------
+
 # Pong Game
-# ----------------------------
+
 class PongGame:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -183,9 +175,9 @@ class PongGame:
 
             self.ball.reset(WINDOW_WIDTH, WINDOW_HEIGHT)
 
-    # ----------------------------
+    
     # SCORE SAVING LOGIC
-    # ----------------------------
+    
     def save_score(self):
         if self.score_saved:
             return

@@ -1,8 +1,3 @@
-"""
-Pygame Games Launcher
-Select and launch any pygame game
-"""
-
 import pygame
 import sys
 import os

@@ -1,8 +1,3 @@
-"""
-Score API Helper for Pygame Games
-Sends scores to Flask API endpoint
-"""
-
 import json
 import urllib.request
 import urllib.error

@@ -1,9 +1,3 @@
-"""
-2048 Game - Pygame Version (OOP Enhanced)
-Classic number puzzle game
-Refactor: adds Tile and Board classes, Board owns the grid and move logic.
-"""
-
 import pygame
 import random
 import json
@@ -58,9 +52,9 @@ TEXT_COLORS = {
 DEFAULT_TEXT_COLOR = (249, 246, 242)
 
 
-# ----------------------------
+
 # Small GameObject interface
-# ----------------------------
+
 class GameObject:
     def update(self, *args, **kwargs):
         pass
@@ -69,9 +63,9 @@ class GameObject:
         raise NotImplementedError
 
 
-# ----------------------------
+
 # Tile: represents a single numeric tile (value only)
-# ----------------------------
+
 class Tile(GameObject):
     def __init__(self, value=0):
         self.value = value
@@ -104,9 +98,8 @@ class Tile(GameObject):
             surface.blit(text, text_rect)
 
 
-# ----------------------------
 # Board: contains grid and movement logic
-# ----------------------------
+
 class Board(GameObject):
     def __init__(self, size=GRID_SIZE):
         self.size = size
@@ -240,10 +233,8 @@ class Board(GameObject):
                 y = offset_y + i * (CELL_SIZE + CELL_PADDING)
                 self.grid[i][j].draw(surface, x, y)
 
-
-# ----------------------------
 # Game orchestrator
-# ----------------------------
+
 class Game2048:
     def __init__(self):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))

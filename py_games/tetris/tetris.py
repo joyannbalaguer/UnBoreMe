@@ -1,9 +1,3 @@
-"""
-Tetris Game - Pygame Version (OOP Enhanced)
-Classic tetris with rotation and line clearing
-Refactor: adds GameObject base, Board and Piece inherit and override draw/update
-"""
-
 import pygame
 import random
 import sys
@@ -51,9 +45,9 @@ SHAPES = [
 ]
 
 
-# ----------------------------
+
 # Base class for polymorphism
-# ----------------------------
+
 class GameObject:
     def update(self, *args, **kwargs):
         """Optional update hook for objects."""
@@ -64,9 +58,9 @@ class GameObject:
         raise NotImplementedError("Subclasses must implement draw()")
 
 
-# ----------------------------
+
 # Piece class (inherits GameObject)
-# ----------------------------
+
 class Piece(GameObject):
     def __init__(self, shape, color):
         self.shape = [row[:] for row in shape]
@@ -107,9 +101,8 @@ class Piece(GameObject):
                                      (px + 1, py + 1, CELL_SIZE - 2, CELL_SIZE - 2))
 
 
-# ----------------------------
 # Board class (inherits GameObject)
-# ----------------------------
+
 class Board(GameObject):
     def __init__(self, rows, cols):
         self.rows = rows
@@ -172,9 +165,9 @@ class Board(GameObject):
                                      (px + 1, py + 1, CELL_SIZE - 2, CELL_SIZE - 2))
 
 
-# ----------------------------
+
 # TetrisGame orchestrator
-# ----------------------------
+
 class TetrisGame:
     def __init__(self):
         # window includes side UI panel (200px)

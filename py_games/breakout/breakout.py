@@ -1,8 +1,3 @@
-"""
-Breakout Game - Pygame Version (OOP Enhanced)
-Classic brick-breaking game with score saving
-"""
-
 import pygame
 import sys
 import os
