@@ -132,16 +132,15 @@ def edit_user(user_id):
         return redirect(url_for('admin.users'))
 
     if request.method == 'POST':
-        # Validate profile data using shared validation
+        # Run validation before saving (admins must follow same rules as users)
         is_valid, field_errors, sanitized_data = validate_profile_data(request.form, require_password=False)
         
         if not is_valid:
-            # Show validation errors
             for field, error in field_errors.items():
                 flash(error, 'danger')
             return render_template('admin/edit_user.html', user=user, errors=field_errors)
         
-        # Update user with sanitized data
+        # Save changes to database
         if User.update_profile(
             user_id,
             sanitized_data['firstname'],
@@ -150,7 +149,7 @@ def edit_user(user_id):
             sanitized_data['birthday'],
             sanitized_data['contact']
         ):
-            # Log action
+            # Keep track of what admin did
             AuditLog.log(session['user_id'], 'USER_UPDATE', f"Updated user: {user.get('username')}")
             flash(f'User {user.get("username")} updated successfully!', 'success')
             return redirect(url_for('admin.view_user', user_id=user_id))
@@ -172,7 +171,7 @@ def activate_user(user_id):
         return redirect(url_for('admin.users'))
 
     if User.activate(user_id):
-        # Log action
+        # Keep track of admin actions for security
         AuditLog.log(session['user_id'], 'USER_ACTIVATE', f'Activated user: {user.get("username")}')
         flash(f'User {user.get("username")} activated successfully!', 'success')
     else:
@@ -192,13 +191,13 @@ def deactivate_user(user_id):
         flash('User not found!', 'danger')
         return redirect(url_for('admin.users'))
 
-    # Prevent deactivating self
+    # Don't let admin lock themselves out
     if user_id == session['user_id']:
         flash('You cannot deactivate your own account!', 'danger')
         return redirect(url_for('admin.users'))
 
     if User.deactivate(user_id):
-        # Log action
+        # Keep track of admin actions for security
         AuditLog.log(session['user_id'], 'USER_DEACTIVATE', f'Deactivated user: {user.get("username")}')
         flash(f'User {user.get("username")} deactivated successfully!', 'success')
     else:
@@ -218,14 +217,14 @@ def delete_user(user_id):
         flash('User not found!', 'danger')
         return redirect(url_for('admin.users'))
 
-    # Prevent deleting self
+    # Don't let admin accidentally delete themselves
     if user_id == session['user_id']:
         flash('You cannot delete your own account!', 'danger')
         return redirect(url_for('admin.users'))
 
     username = user.get('username')
     if User.delete_user(user_id):
-        # Log action
+        # Keep track of deletions for security
         AuditLog.log(session['user_id'], 'USER_DELETE', f'Deleted user: {username}')
         flash(f'User {username} deleted successfully!', 'success')
     else:

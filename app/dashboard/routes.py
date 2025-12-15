@@ -18,11 +18,9 @@ def index():
     """User dashboard home page"""
     user = User.get_by_id(session['user_id'])
     
-    # Get user's recent posts
     posts = Post.get_by_user(session['user_id'])
     recent_posts = posts[:5] if posts else []
     
-    # Get user's game statistics
     game_stats = GameScore.get_user_game_stats(session['user_id'])
     
     return render_template('dashboard/index.html', user=user, recent_posts=recent_posts, game_stats=game_stats)
@@ -45,16 +43,15 @@ def edit_profile():
     user = User.get_by_id(session['user_id'])
     
     if request.method == 'POST':
-        # Validate profile data using shared validation
+        # Run validation before saving to database
         is_valid, field_errors, sanitized_data = validate_profile_data(request.form, require_password=False)
         
         if not is_valid:
-            # Show validation errors
             for field, error in field_errors.items():
                 flash(error, 'danger')
             return render_template('dashboard/profile.html', user=user, errors=field_errors)
         
-        # Update profile with sanitized data
+        # Save the changes to database
         if User.update_profile(
             session['user_id'],
             sanitized_data['firstname'],
@@ -76,16 +73,14 @@ def edit_profile():
 @active_required
 def change_password():
     """Change user password (POST only). Renders profile page on error so modal shows."""
-    # Load user
     user = User.get_by_id(session.get('user_id'))
     if not user:
         flash('User not found. Please log in again.', 'danger')
         return redirect(url_for('auth.login'))
 
-    # Read form values
     current_password = request.form.get('current_password', '').strip()
     
-    # Verify current password first
+    # Make sure they know their current password before changing
     if not current_password:
         flash('Current password is required!', 'danger')
         return render_template('dashboard/profile.html', user=user, show_password_modal=True)
@@ -94,7 +89,7 @@ def change_password():
         flash('Current password is incorrect!', 'danger')
         return render_template('dashboard/profile.html', user=user, show_password_modal=True)
 
-    # Validate new password using shared validation
+    # Check if new password meets requirements
     password_data = {
         'password': request.form.get('new_password', ''),
         'confirm_password': request.form.get('confirm_new_password', '')
@@ -102,14 +97,13 @@ def change_password():
     
     is_valid, field_errors, sanitized_data = validate_profile_data(password_data, require_password=False)
     
-    # Check if there are password-related errors
     if 'password' in field_errors or 'confirm_password' in field_errors:
         for field, error in field_errors.items():
             if field in ['password', 'confirm_password']:
                 flash(error, 'danger')
         return render_template('dashboard/profile.html', user=user, show_password_modal=True)
 
-    # Update password
+    # Everything looks good, update the password
     try:
         success = User.update_password(session['user_id'], sanitized_data['password'])
         if success:

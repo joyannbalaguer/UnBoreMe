@@ -135,11 +135,19 @@
 
                             <td>
                                 {% if user.is_active %}
-                                    <a class="status-badge-link" href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" title="Click to deactivate">
+                                    <a class="status-badge-link status-toggle-link" 
+                                       href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" 
+                                       data-action="deactivate"
+                                       data-username="{{ user.username }}"
+                                       title="Click to deactivate">
                                         <span class="status-badge status-active">Active</span>
                                     </a>
                                 {% else %}
-                                    <a class="status-badge-link" href="{{ url_for('admin.activate_user', user_id=user.id) }}" title="Click to activate">
+                                    <a class="status-badge-link status-toggle-link" 
+                                       href="{{ url_for('admin.activate_user', user_id=user.id) }}" 
+                                       data-action="activate"
+                                       data-username="{{ user.username }}"
+                                       title="Click to activate">
                                         <span class="status-badge status-inactive">Inactive</span>
                                     </a>
                                 {% endif %}
@@ -194,6 +202,42 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // Status toggle (activate/deactivate) confirmation
+    document.querySelectorAll(".status-toggle-link").forEach(link => {
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const action = this.dataset.action;
+            const username = this.dataset.username;
+            const url = this.href;
+            
+            const isActivate = action === 'activate';
+            const title = isActivate ? 'Activate User?' : 'Deactivate User?';
+            const text = isActivate 
+                ? `Are you sure you want to activate user "${username}"?` 
+                : `Are you sure you want to deactivate user "${username}"?`;
+            
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: isActivate ? "Yes, activate" : "Yes, deactivate",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: isActivate ? "#16a34a" : "#eab308",
+                cancelButtonColor: "#6c757d",
+                background: "#12121a",
+                color: "#ffffff",
+                customClass: {
+                    popup: 'swal2-popup-dark'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        });
+    });
+
     // Delete confirmation
     document.querySelectorAll(".deleteUserBtn").forEach(btn => {
         btn.addEventListener("click", function (e) {

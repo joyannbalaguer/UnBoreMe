@@ -1,3 +1,7 @@
+"""
+Shared validation for profile edits
+Used by both regular users and admins to keep data consistent
+"""
 import re
 from datetime import datetime, date
 
@@ -15,7 +19,7 @@ def validate_profile_data(form_data, require_password=False):
     """
     field_errors = {}
     
-    # Extract and sanitize form data
+    # Clean up whitespace from all text fields
     firstname = form_data.get('firstname', '').strip()
     middlename = form_data.get('middlename', '').strip()
     lastname = form_data.get('lastname', '').strip()
@@ -24,7 +28,7 @@ def validate_profile_data(form_data, require_password=False):
     password = form_data.get('password', '') if require_password else form_data.get('password', '')
     confirm_password = form_data.get('confirm_password', '') if require_password else form_data.get('confirm_password', '')
     
-    # FIRST NAME VALIDATION
+    # Check first name - required and must look like a real name
     if not firstname:
         field_errors['firstname'] = 'First name is required'
     elif not (2 <= len(firstname) <= 50):
@@ -38,7 +42,7 @@ def validate_profile_data(form_data, require_password=False):
     elif re.search(r'\s{2,}', firstname):
         field_errors['firstname'] = 'First name contains excessive spacing'
     
-    # MIDDLE NAME VALIDATION (optional)
+    # Middle name is optional, but if provided it should follow same rules
     if middlename:
         if len(middlename) > 50:
             field_errors['middlename'] = 'Middle name is too long (maximum 50 characters)'
@@ -51,7 +55,7 @@ def validate_profile_data(form_data, require_password=False):
         elif re.search(r'\s{2,}', middlename):
             field_errors['middlename'] = 'Middle name contains excessive spacing'
     
-    # LAST NAME VALIDATION
+    # Check last name - same rules as first name
     if not lastname:
         field_errors['lastname'] = 'Last name is required'
     elif len(lastname) < 2:
@@ -69,7 +73,7 @@ def validate_profile_data(form_data, require_password=False):
     elif re.search(r'\s{2,}', lastname):
         field_errors['lastname'] = 'Last name contains excessive spacing'
     
-    # AGE/BIRTHDAY VALIDATION
+    # Make sure birthday is realistic (not future, reasonable age range)
     if birthday:
         try:
             birth_date = datetime.strptime(birthday, '%Y-%m-%d').date()
@@ -85,14 +89,14 @@ def validate_profile_data(form_data, require_password=False):
         except ValueError:
             field_errors['birthday'] = 'Invalid date format. Please use YYYY-MM-DD format'
     
-    # CONTACT NUMBER VALIDATION
+    # Philippine mobile number format check
     if contact:
         if not re.match(r'^09\d{9}$', contact):
             field_errors['contact'] = 'Contact number must be in the format 09XXXXXXXXX'
         elif re.search(r'(\d)\1{3,}', contact):
             field_errors['contact'] = 'Contact number contains too many repeated digits'
     
-    # PASSWORD VALIDATION (only when changing password)
+    # Only validate password if user is actually changing it
     if password or confirm_password:
         if not password:
             field_errors['password'] = 'Password is required'
@@ -101,6 +105,7 @@ def validate_profile_data(form_data, require_password=False):
         elif len(password) > 128:
             field_errors['password'] = 'Password is too long (maximum 128 characters)'
         else:
+            # Check password strength requirements
             has_upper = bool(re.search(r'[A-Z]', password))
             has_lower = bool(re.search(r'[a-z]', password))
             has_digit = bool(re.search(r'\d', password))
@@ -115,7 +120,6 @@ def validate_profile_data(form_data, require_password=False):
             elif not has_special:
                 field_errors['password'] = 'Password must contain at least one special character (!@#$%^&*-_+=)'
         
-        # CONFIRM PASSWORD VALIDATION
         if not confirm_password:
             field_errors['confirm_password'] = 'Please confirm your password'
         elif password != confirm_password:
