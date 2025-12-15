@@ -10,6 +10,14 @@ from score_api import send_score_to_api, get_user_and_game_from_env
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()
+
+# Initialize background music
+music_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'music', 'flappybird.mp3')
+if os.path.exists(music_path):
+    pygame.mixer.music.load(music_path)
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1)
 
 # Constants
 WINDOW_WIDTH = 400
@@ -150,6 +158,12 @@ class Pipe(GameObject):
     def is_off_screen(self):
         return self.x + self.width < 0
 
+# Game States
+class GameState:
+    START = "START"
+    PLAYING = "PLAYING"
+    GAME_OVER = "GAME_OVER"
+
 # FlappyBirdGame orchestrator
 
 class FlappyBirdGame:
@@ -159,7 +173,7 @@ class FlappyBirdGame:
         self.clock = pygame.time.Clock()
 
         # Game state
-        self.game_running = False
+        self.state = GameState.START
         self.score = 0
         self.best_score = self.load_best_score()
 
@@ -203,7 +217,7 @@ class FlappyBirdGame:
             pass
 
     def start(self):
-        self.game_running = True
+        self.state = GameState.PLAYING
         self.score = 0
         self.bird = Bird(80, WINDOW_HEIGHT // 2)
         self.pipes = []
@@ -211,11 +225,11 @@ class FlappyBirdGame:
         self.ground_x = 0
 
     def flap(self):
-        if self.game_running:
+        if self.state == GameState.PLAYING:
             self.bird.flap()
 
     def update(self):
-        if not self.game_running:
+        if self.state != GameState.PLAYING:
             return
 
         # Update bird (polymorphic)
@@ -268,7 +282,7 @@ class FlappyBirdGame:
             self.ground_x = 0
 
     def game_over(self):
-        self.game_running = False
+        self.state = GameState.GAME_OVER
         # Send score to API
         user_id, game_id = get_user_and_game_from_env()
         if user_id and game_id:
@@ -331,7 +345,7 @@ class FlappyBirdGame:
         self.draw_text_with_outline('Click or Press SPACE to Flap', self.instruction_font,
                                     WINDOW_WIDTH // 2, 350)
         self.draw_text_with_outline('Avoid the pipes!', self.small_font, WINDOW_WIDTH // 2, 390)
-        self.draw_text_with_outline('Click to Start!', self.instruction_font, WINDOW_WIDTH // 2, 460)
+        self.draw_text_with_outline('Press SPACE to Start!', self.instruction_font, WINDOW_WIDTH // 2, 460)
 
     def draw_game(self):
         self.draw_background()
@@ -364,18 +378,19 @@ class FlappyBirdGame:
                                     WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
         self.draw_text_with_outline(f'Best: {self.best_score}', self.instruction_font,
                                     WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40)
-        self.draw_text_with_outline('Press R or Click to Restart', self.small_font,
+        self.draw_text_with_outline('Press R to Restart', self.small_font,
                                     WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 90)
         self.draw_text_with_outline('Press ESC to Close Game', self.small_font,
                                     WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 120)
 
     def draw(self):
-        if not self.game_running and self.frame_count == 0:
+        if self.state == GameState.START:
             self.draw_start_screen()
-        else:
+        elif self.state == GameState.PLAYING:
             self.draw_game()
-            if not self.game_running:
-                self.draw_game_over()
+        elif self.state == GameState.GAME_OVER:
+            self.draw_game()
+            self.draw_game_over()
 
     def run(self):
         running = True
@@ -386,24 +401,28 @@ class FlappyBirdGame:
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        running = False
-                    elif event.key in (pygame.K_SPACE, pygame.K_r):
-                        if not self.game_running and self.frame_count == 0:
+                        # ESC only closes from GAME_OVER state
+                        if self.state == GameState.GAME_OVER:
+                            running = False
+                    elif event.key == pygame.K_r:
+                        # R restarts from GAME_OVER state
+                        if self.state == GameState.GAME_OVER:
                             self.start()
-                        elif not self.game_running:
+                    elif event.key == pygame.K_SPACE:
+                        # SPACE starts from START or flaps during PLAYING
+                        if self.state == GameState.START:
                             self.start()
-                        else:
+                        elif self.state == GameState.PLAYING:
                             self.flap()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if not self.game_running and self.frame_count == 0:
+                    # Mouse starts from START or flaps during PLAYING
+                    if self.state == GameState.START:
                         self.start()
-                    elif not self.game_running:
-                        self.start()
-                    else:
+                    elif self.state == GameState.PLAYING:
                         self.flap()
 
-            # Only update when game is running
-            if self.game_running:
+            # Only update when playing
+            if self.state == GameState.PLAYING:
                 self.update()
             
             self.draw()
@@ -411,6 +430,7 @@ class FlappyBirdGame:
             pygame.display.flip()
             self.clock.tick(FPS)
 
+        pygame.mixer.music.stop()
         pygame.quit()
 
 

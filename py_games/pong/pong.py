@@ -9,6 +9,14 @@ from score_api import send_score_to_api, get_user_and_game_from_env
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()
+
+# Initialize background music
+music_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'music', 'pong.mp3')
+if os.path.exists(music_path):
+    pygame.mixer.music.load(music_path)
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1)
 
 # Constants
 WINDOW_WIDTH = 800
@@ -123,6 +131,12 @@ class Ball(GameObject):
         )
 
 
+# Game States
+class GameState:
+    START = "START"
+    PLAYING = "PLAYING"
+    GAME_OVER = "GAME_OVER"
+
 
 # Pong Game
 
@@ -141,17 +155,21 @@ class PongGame:
         self.score_right = 0
         self.win_score = 5
 
-        self.game_running = False
-        self.game_over = False
+        self.state = GameState.START
         self.score_saved = False  # IMPORTANT: prevents duplicate saves
 
         self.font = pygame.font.Font(None, 48)
+        self.small_font = pygame.font.Font(None, 32)
 
     def start(self):
-        self.game_running = True
+        self.state = GameState.PLAYING
+        self.score_left = 0
+        self.score_right = 0
+        self.score_saved = False
+        self.ball.reset(WINDOW_WIDTH, WINDOW_HEIGHT)
 
     def update(self, keys):
-        if not self.game_running or self.game_over:
+        if self.state != GameState.PLAYING:
             return
 
         self.left_paddle.update(keys=keys, canvas_height=WINDOW_HEIGHT)
@@ -168,13 +186,14 @@ class PongGame:
                 self.score_right += 1
 
             if self.score_left >= self.win_score or self.score_right >= self.win_score:
-                self.game_over = True
-                self.game_running = False
-                self.save_score()
+                self.game_over()
                 return
 
             self.ball.reset(WINDOW_WIDTH, WINDOW_HEIGHT)
 
+    def game_over(self):
+        self.state = GameState.GAME_OVER
+        self.save_score()
     
     # SCORE SAVING LOGIC
     
@@ -189,7 +208,27 @@ class PongGame:
 
         self.score_saved = True
 
-    def draw(self):
+    def draw_start_screen(self):
+        self.screen.fill(BACKGROUND_COLOR)
+        
+        title = self.font.render("PONG", True, TEXT_COLOR)
+        self.screen.blit(title, title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 100)))
+        
+        instructions = [
+            "Use Arrow Keys or W/S to move",
+            "First to 5 points wins!",
+            "",
+            "Press SPACE to Start"
+        ]
+        
+        y = WINDOW_HEIGHT // 2
+        for line in instructions:
+            if line:
+                text = self.small_font.render(line, True, TEXT_COLOR)
+                self.screen.blit(text, text.get_rect(center=(WINDOW_WIDTH // 2, y)))
+            y += 40
+
+    def draw_game(self):
         self.screen.fill(BACKGROUND_COLOR)
 
         self.left_paddle.draw(self.screen)
@@ -202,23 +241,32 @@ class PongGame:
         self.screen.blit(left, (WINDOW_WIDTH // 4, 20))
         self.screen.blit(right, (WINDOW_WIDTH * 3 // 4, 20))
 
-        if self.game_over:
-            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-            overlay.set_alpha(180)
-            overlay.fill((0, 0, 0))
-            self.screen.blit(overlay, (0, 0))
-            
-            title = self.font.render("GAME OVER", True, TEXT_COLOR)
-            self.screen.blit(title, title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60)))
-            
-            score_text = pygame.font.Font(None, 36).render(f"Your Score: {self.score_left}", True, TEXT_COLOR)
-            self.screen.blit(score_text, score_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
-            
-            restart = pygame.font.Font(None, 32).render("Press R to Restart", True, TEXT_COLOR)
-            self.screen.blit(restart, restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50)))
-            
-            quit_text = pygame.font.Font(None, 32).render("Press ESC to Close Game", True, TEXT_COLOR)
-            self.screen.blit(quit_text, quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 90)))
+    def draw_game_over(self):
+        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        overlay.set_alpha(180)
+        overlay.fill((0, 0, 0))
+        self.screen.blit(overlay, (0, 0))
+        
+        title = self.font.render("GAME OVER", True, TEXT_COLOR)
+        self.screen.blit(title, title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60)))
+        
+        score_text = pygame.font.Font(None, 36).render(f"Your Score: {self.score_left}", True, TEXT_COLOR)
+        self.screen.blit(score_text, score_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
+        
+        restart = self.small_font.render("Press R to Restart", True, TEXT_COLOR)
+        self.screen.blit(restart, restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50)))
+        
+        quit_text = self.small_font.render("Press ESC to Close Game", True, TEXT_COLOR)
+        self.screen.blit(quit_text, quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 90)))
+
+    def draw(self):
+        if self.state == GameState.START:
+            self.draw_start_screen()
+        elif self.state == GameState.PLAYING:
+            self.draw_game()
+        elif self.state == GameState.GAME_OVER:
+            self.draw_game()
+            self.draw_game_over()
 
     def run(self):
         running = True
@@ -230,17 +278,20 @@ class PongGame:
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        running = False
-                    elif event.key == pygame.K_SPACE:
-                        if not self.game_running and not self.game_over:
-                            self.start()
+                        # ESC only closes from GAME_OVER state
+                        if self.state == GameState.GAME_OVER:
+                            running = False
                     elif event.key == pygame.K_r:
-                        if self.game_over:
-                            self.__init__()
+                        # R restarts from GAME_OVER state
+                        if self.state == GameState.GAME_OVER:
+                            self.start()
+                    elif event.key == pygame.K_SPACE:
+                        # SPACE starts from START state
+                        if self.state == GameState.START:
                             self.start()
 
-            # Only update when game is running
-            if self.game_running and not self.game_over:
+            # Only update when game is playing
+            if self.state == GameState.PLAYING:
                 self.update(keys)
             
             self.draw()
@@ -248,6 +299,7 @@ class PongGame:
             pygame.display.flip()
             self.clock.tick(FPS)
 
+        pygame.mixer.music.stop()
         pygame.quit()
 
 

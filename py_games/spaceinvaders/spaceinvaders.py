@@ -8,6 +8,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from score_api import send_score_to_api, get_user_and_game_from_env
 
 pygame.init()
+pygame.mixer.init()
+
+# Initialize background music
+music_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'music', 'spaceinvader.mp3')
+if os.path.exists(music_path):
+    pygame.mixer.music.load(music_path)
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1)
 
 # Constants
 WINDOW_WIDTH = 800
@@ -402,6 +410,7 @@ class SpaceInvadersGame:
             pygame.display.flip()
             self.clock.tick(FPS)
 
+        pygame.mixer.music.stop()
         pygame.quit()
 
 

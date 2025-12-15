@@ -10,6 +10,14 @@ from score_api import send_score_to_api, get_user_and_game_from_env
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()
+
+# Initialize background music
+music_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'music', '2048.mp3')
+if os.path.exists(music_path):
+    pygame.mixer.music.load(music_path)
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1)
 
 # Constants
 WINDOW_WIDTH = 600
@@ -445,6 +453,7 @@ class Game2048:
             pygame.display.flip()
             self.clock.tick(FPS)
 
+        pygame.mixer.music.stop()
         pygame.quit()
 
 
