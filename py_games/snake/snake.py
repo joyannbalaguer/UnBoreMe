@@ -266,20 +266,24 @@ class SnakeGame:
         self.screen.blit(overlay, (0, 0))
         
         go = self.title_font.render('GAME OVER', True, TEXT_COLOR)
-        go_rect = go.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50))
+        go_rect = go.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 80))
         self.screen.blit(go, go_rect)
         
         score = self.instruction_font.render(f'Score: {self.score}', True, TEXT_COLOR)
-        score_rect = score.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
+        score_rect = score.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 20))
         self.screen.blit(score, score_rect)
         
         best = self.instruction_font.render(f'Best: {self.best_score}', True, FOOD_COLOR)
-        best_rect = best.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
+        best_rect = best.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 20))
         self.screen.blit(best, best_rect)
         
-        restart = self.instruction_font.render('Press R to Restart | ESC to Quit', True, TEXT_COLOR)
-        restart_rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 100))
+        restart = self.instruction_font.render('Press R to Restart', True, TEXT_COLOR)
+        restart_rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 70))
         self.screen.blit(restart, restart_rect)
+        
+        quit_text = self.instruction_font.render('Press ESC to Close Game', True, TEXT_COLOR)
+        quit_rect = quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 110))
+        self.screen.blit(quit_text, quit_rect)
     
     def handle_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -295,6 +299,7 @@ class SnakeGame:
     
     def run(self):
         running = True
+        game_over = False
         
         while running:
             for event in pygame.event.get():
@@ -306,11 +311,19 @@ class SnakeGame:
                     elif event.key in (pygame.K_SPACE, pygame.K_r):
                         if not self.game_running:
                             self.start()
+                            game_over = False
                     else:
                         self.handle_input(event)
             
-            self.update()
+            # Only update if game is actively running
+            if self.game_running:
+                self.update()
+                
+                # Check if game just ended
+                if not self.game_running and not game_over:
+                    game_over = True
             
+            # Draw appropriate screen
             if not self.game_running:
                 if self.snake and not self.snake.alive:
                     self.draw_game()
@@ -324,7 +337,6 @@ class SnakeGame:
             self.clock.tick(FPS)
         
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == '__main__':

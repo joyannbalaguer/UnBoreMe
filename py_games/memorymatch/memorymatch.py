@@ -175,6 +175,8 @@ class MemoryMatchGame:
             self.screen.blit(title, title.get_rect(center=(400, 250)))
             tip = self.font.render("Click to Start", True, TEXT_COLOR)
             self.screen.blit(tip, tip.get_rect(center=(400, 320)))
+            esc_tip = pygame.font.Font(None, 24).render("Press ESC to Close", True, TEXT_COLOR)
+            self.screen.blit(esc_tip, esc_tip.get_rect(center=(400, 360)))
         else:
             self.screen.blit(self.font.render(f"Score: {self.score}", True, TEXT_COLOR), (20, 20))
             self.screen.blit(self.font.render(f"Level: {self.level}", True, TEXT_COLOR), (680, 20))
@@ -191,18 +193,24 @@ class MemoryMatchGame:
                 if event.type == pygame.QUIT:
                     self.send_score_once()
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.send_score_once()
+                        running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if not self.game_running:
                         self.start()
                     else:
                         self.handle_click(event.pos)
 
-            self.update()
+            # Only update when game is running
+            if self.game_running:
+                self.update()
+            
             self.draw()
             self.clock.tick(FPS)
 
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == "__main__":

@@ -3,7 +3,12 @@
 
 {% block title %}Audit Logs - UnBoreMe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-responsive.css') }}">
+{% endblock %}
+
 {% block content %}
+<body class="admin-page">
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col-md-12">
@@ -36,8 +41,8 @@
                 <div class="card-body">
 
                     {% if logs %}
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped" id="auditTable">
+                    <div class="table-responsive admin-table-wrapper">
+                        <table class="table table-hover table-striped admin-table" id="auditTable">
                             <thead>
                                 <tr>
                                     <th style="width:6%;">ID</th>
@@ -82,6 +87,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <p class="table-scroll-hint">← Swipe left/right to see all columns →</p>
                     </div>
                     {% else %}
                     <div class="text-center py-5">
@@ -177,4 +183,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+</body>
 {% endblock %}

@@ -2,7 +2,16 @@
 
 {% block title %}Admin Dashboard - UnBoreMe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-responsive.css') }}">
+<style>
+body { overflow-x: auto !important; }
+.admin-page { overflow-x: auto; }
+</style>
+{% endblock %}
+
 {% block content %}
+<body class="admin-page">
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col-md-12">
@@ -90,9 +99,9 @@
                     <h5 class="mb-0"><i class="fas fa-history"></i> Recent Activity</h5>
                 </div>
                 <div class="card-body">
-                    {% if recent_logs %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
+            {% if recent_logs %}
+            <div class="table-responsive admin-table-wrapper">
+                <table class="table table-hover admin-table">
                             <thead>
                                 <tr>
                                     <th>Admin</th>
@@ -112,10 +121,11 @@
                                     <td><small>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
                                 </tr>
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="text-center mt-3">
+                    </tbody>
+                </table>
+                <p class="table-scroll-hint">← Swipe left to see more →</p>
+            </div>
+            <div class="text-center mt-3">
                         <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-primary">
                             View All Logs <i class="fas fa-arrow-right"></i>
                         </a>
@@ -128,4 +138,5 @@
         </div>
     </div>
 </div>
+</body>
 {% endblock %}

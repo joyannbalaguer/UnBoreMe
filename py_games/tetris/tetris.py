@@ -374,16 +374,20 @@ class TetrisGame:
         self.screen.blit(overlay, (0, 0))
 
         game_over_text = self.title_font.render('GAME OVER', True, TEXT_COLOR)
-        game_over_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
+        game_over_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60))
         self.screen.blit(game_over_text, game_over_rect)
 
         score_text = self.instruction_font.render(f'Score: {self.score}', True, TEXT_COLOR)
-        score_rect = score_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
+        score_rect = score_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
         self.screen.blit(score_text, score_rect)
 
-        restart_text = self.instruction_font.render('Press SPACE to Restart', True, TEXT_COLOR)
-        restart_rect = restart_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
+        restart_text = self.instruction_font.render('Press R or SPACE to Restart', True, TEXT_COLOR)
+        restart_rect = restart_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 45))
         self.screen.blit(restart_text, restart_rect)
+        
+        quit_text = self.instruction_font.render('Press ESC to Close Game', True, TEXT_COLOR)
+        quit_rect = quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 80))
+        self.screen.blit(quit_text, quit_rect)
 
     def run(self):
         running = True
@@ -395,10 +399,10 @@ class TetrisGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-                    elif event.key == pygame.K_SPACE:
+                    elif event.key in (pygame.K_SPACE, pygame.K_r):
                         if not self.game_running:
                             self.start()
-                        elif not self.game_over:
+                        elif not self.game_over and event.key == pygame.K_SPACE:
                             self.rotate_piece()
                     elif self.game_running and not self.game_over:
                         if event.key in (pygame.K_LEFT, pygame.K_a):
@@ -410,10 +414,11 @@ class TetrisGame:
                         elif event.key in (pygame.K_UP, pygame.K_w):
                             self.rotate_piece()
 
-            # game logic
-            self.update()
+            # Game logic - only update when actively running
+            if self.game_running and not self.game_over:
+                self.update()
 
-            # rendering
+            # Rendering
             if not self.game_running:
                 self.draw_start_screen()
             else:
@@ -425,7 +430,6 @@ class TetrisGame:
             self.clock.tick(FPS)
 
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == '__main__':

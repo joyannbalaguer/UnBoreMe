@@ -208,9 +208,23 @@ class BreakoutGame:
             self.screen.blit(self.font.render(f"Lives: {self.lives}", True, TEXT_COLOR), (680, 20))
 
             if self.game_over or self.game_won:
+                overlay_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+                overlay_surface.set_alpha(180)
+                overlay_surface.fill((0, 0, 0))
+                self.screen.blit(overlay_surface, (0, 0))
+                
                 msg = "YOU WIN!" if self.game_won else "GAME OVER"
-                overlay = self.big_font.render(msg, True, TEXT_COLOR)
-                self.screen.blit(overlay, overlay.get_rect(center=(400, 300)))
+                title = self.big_font.render(msg, True, TEXT_COLOR)
+                self.screen.blit(title, title.get_rect(center=(400, 200)))
+                
+                score_text = self.font.render(f"Final Score: {self.score}", True, TEXT_COLOR)
+                self.screen.blit(score_text, score_text.get_rect(center=(400, 270)))
+                
+                restart_text = self.font.render("Press R to Restart", True, TEXT_COLOR)
+                self.screen.blit(restart_text, restart_text.get_rect(center=(400, 330)))
+                
+                quit_text = self.font.render("Press ESC to Close Game", True, TEXT_COLOR)
+                self.screen.blit(quit_text, quit_text.get_rect(center=(400, 380)))
 
     def run(self):
         running = True
@@ -228,13 +242,15 @@ class BreakoutGame:
                     elif event.key == pygame.K_r and (self.game_over or self.game_won):
                         self.reset()
 
-            self.update(keys)
+            # Only update when actively playing
+            if self.running and not self.game_over and not self.game_won:
+                self.update(keys)
+            
             self.draw()
             pygame.display.flip()
             self.clock.tick(FPS)
 
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == "__main__":

@@ -203,8 +203,22 @@ class PongGame:
         self.screen.blit(right, (WINDOW_WIDTH * 3 // 4, 20))
 
         if self.game_over:
-            text = self.font.render("GAME OVER", True, TEXT_COLOR)
-            self.screen.blit(text, text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
+            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+            overlay.set_alpha(180)
+            overlay.fill((0, 0, 0))
+            self.screen.blit(overlay, (0, 0))
+            
+            title = self.font.render("GAME OVER", True, TEXT_COLOR)
+            self.screen.blit(title, title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60)))
+            
+            score_text = pygame.font.Font(None, 36).render(f"Your Score: {self.score_left}", True, TEXT_COLOR)
+            self.screen.blit(score_text, score_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
+            
+            restart = pygame.font.Font(None, 32).render("Press R to Restart", True, TEXT_COLOR)
+            self.screen.blit(restart, restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50)))
+            
+            quit_text = pygame.font.Font(None, 32).render("Press ESC to Close Game", True, TEXT_COLOR)
+            self.screen.blit(quit_text, quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 90)))
 
     def run(self):
         running = True
@@ -214,18 +228,27 @@ class PongGame:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    if not self.game_running and not self.game_over:
-                        self.start()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                    elif event.key == pygame.K_SPACE:
+                        if not self.game_running and not self.game_over:
+                            self.start()
+                    elif event.key == pygame.K_r:
+                        if self.game_over:
+                            self.__init__()
+                            self.start()
 
-            self.update(keys)
+            # Only update when game is running
+            if self.game_running and not self.game_over:
+                self.update(keys)
+            
             self.draw()
 
             pygame.display.flip()
             self.clock.tick(FPS)
 
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == "__main__":

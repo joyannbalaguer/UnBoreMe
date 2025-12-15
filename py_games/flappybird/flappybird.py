@@ -359,13 +359,15 @@ class FlappyBirdGame:
         self.screen.blit(overlay, (0, 0))
 
         # Game over text
-        self.draw_text_with_outline('GAME OVER', self.title_font, WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50)
+        self.draw_text_with_outline('GAME OVER', self.title_font, WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 70)
         self.draw_text_with_outline(f'Score: {self.score}', self.instruction_font,
-                                    WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10)
+                                    WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
         self.draw_text_with_outline(f'Best: {self.best_score}', self.instruction_font,
-                                    WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50)
-        self.draw_text_with_outline('Click to Restart', self.small_font,
-                                    WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 100)
+                                    WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40)
+        self.draw_text_with_outline('Press R or Click to Restart', self.small_font,
+                                    WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 90)
+        self.draw_text_with_outline('Press ESC to Close Game', self.small_font,
+                                    WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 120)
 
     def draw(self):
         if not self.game_running and self.frame_count == 0:
@@ -385,7 +387,7 @@ class FlappyBirdGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-                    elif event.key == pygame.K_SPACE:
+                    elif event.key in (pygame.K_SPACE, pygame.K_r):
                         if not self.game_running and self.frame_count == 0:
                             self.start()
                         elif not self.game_running:
@@ -400,14 +402,16 @@ class FlappyBirdGame:
                     else:
                         self.flap()
 
-            self.update()
+            # Only update when game is running
+            if self.game_running:
+                self.update()
+            
             self.draw()
 
             pygame.display.flip()
             self.clock.tick(FPS)
 
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == '__main__':

@@ -357,13 +357,18 @@ class Game2048:
 
         # Game over text
         game_over_text = self.gameover_font.render('Game Over!', True, TEXT_COLOR)
-        game_over_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 30))
+        game_over_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50))
         self.screen.blit(game_over_text, game_over_rect)
 
         # Try again text
-        try_again_text = self.instruction_font.render('Press SPACE to try again', True, TEXT_COLOR)
-        try_again_rect = try_again_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 30))
+        try_again_text = self.instruction_font.render('Press R or SPACE to Restart', True, TEXT_COLOR)
+        try_again_rect = try_again_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
         self.screen.blit(try_again_text, try_again_rect)
+        
+        # Quit text
+        quit_text = self.instruction_font.render('Press ESC to Close Game', True, TEXT_COLOR)
+        quit_rect = quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 45))
+        self.screen.blit(quit_text, quit_rect)
 
     def start(self):
         """Start a new game"""
@@ -380,7 +385,7 @@ class Game2048:
     def handle_input(self, event):
         """Handle keyboard input"""
         if not self.game_running:
-            if event.key == pygame.K_SPACE:
+            if event.key in (pygame.K_SPACE, pygame.K_r):
                 self.start()
             return
 
@@ -425,6 +430,7 @@ class Game2048:
                         self.handle_input(event)
                         game_over_drawn = False
 
+            # Draw appropriate screen
             if not self.game_running:
                 self.draw_start_screen()
             else:
@@ -440,7 +446,6 @@ class Game2048:
             self.clock.tick(FPS)
 
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == '__main__':

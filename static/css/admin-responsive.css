@@ -1,0 +1,591 @@
+/* ========================================
+   Admin Dashboard Responsive Styles
+   Fix mobile and small screen issues
+   ======================================== */
+
+/* Base - Ensure admin pages can scroll horizontally if needed */
+body.admin-page {
+    overflow-x: auto !important;
+    min-width: 100%;
+}
+
+/* Admin container adjustments */
+.admin-container {
+    width: 100%;
+    padding: 0 15px;
+}
+
+/* Container responsive padding */
+.container {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Ensure table containers can scroll horizontally */
+.table-responsive,
+.admin-table-wrapper {
+    width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin: 1rem 0;
+    display: block;
+}
+
+/* Admin table base styles */
+.admin-table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Table scroll hint */
+.table-scroll-hint {
+    display: none;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+/* ========================================
+   Mobile Breakpoints (max-width: 768px)
+   ======================================== */
+
+@media (max-width: 768px) {
+    /* Show scroll hint on mobile */
+    .table-scroll-hint {
+        display: block;
+    }
+
+    /* Ensure body can scroll */
+    body.admin-page {
+        overflow-x: auto !important;
+    }
+
+    html, body {
+        overflow-x: auto !important;
+    }
+
+    /* Container full width on mobile */
+    .container {
+        max-width: 100%;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* Reduce margins and padding */
+    .mt-4 {
+        margin-top: 1.5rem !important;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Admin header adjustments */
+    .admin-header h1,
+    .display-4 {
+        font-size: 1.75rem !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .display-5 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .lead {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Statistics cards - stack vertically */
+    .row.mb-4 {
+        margin-bottom: 1rem !important;
+    }
+
+    .row > [class*='col-'] {
+        margin-bottom: 1rem;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .col-md-4,
+    .col-md-6,
+    .col-md-12 {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Stat cards */
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+
+    .stat-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .stat-icon {
+        font-size: 2rem !important;
+    }
+
+    .stat-icon i {
+        font-size: 2rem !important;
+    }
+
+    /* Cards */
+    .card {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Quick action buttons - full width on mobile */
+    .card-body .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        margin-right: 0 !important;
+        display: block;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* Back and action buttons */
+    .mb-3 .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        margin-right: 0 !important;
+        display: block;
+    }
+
+    /* Table wrapper with horizontal scroll */
+    .table-responsive,
+    .admin-table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        display: block;
+        width: 100%;
+        margin: 1rem 0;
+    }
+
+    /* Admin tables on mobile - force min width for horizontal scroll */
+    .table-responsive table,
+    .admin-table-wrapper table,
+    .admin-table {
+        min-width: 800px !important;
+        font-size: 0.85rem;
+        display: table !important;
+        width: max-content;
+    }
+
+    /* Table cells - reduce padding */
+    .table-responsive th,
+    .table-responsive td,
+    table th,
+    table td,
+    .admin-table th,
+    .admin-table td {
+        padding: 0.6rem 0.5rem !important;
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+    /* Table striped/hover */
+    .table-striped tbody tr:nth-of-type(odd),
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Action buttons column */
+    .actions-column {
+        min-width: 220px;
+        padding: 0.6rem 0.5rem !important;
+    }
+
+    .table-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+        width: 100%;
+    }
+
+    /* Action buttons - full width in mobile table */
+    .action-btn {
+        width: 100% !important;
+        min-width: auto !important;
+        padding: 6px 10px !important;
+        font-size: 0.85rem !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .action-btn i {
+        font-size: 0.85rem;
+    }
+
+    /* Delete form buttons */
+    .deleteUserForm {
+        width: 100%;
+        display: block !important;
+        margin: 0;
+    }
+
+    .deleteUserForm .action-btn {
+        width: 100%;
+    }
+
+    /* Status badges */
+    .status-badge {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    /* Role badges */
+    .badge {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    /* Search controls on mobile */
+    #searchControls {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100%;
+        gap: 0.5rem !important;
+    }
+
+    #userSearch,
+    #auditSearch {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+
+    #searchClear {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    #searchCount {
+        text-align: center;
+        width: 100%;
+        font-size: 0.9rem;
+    }
+
+    /* Form controls */
+    .form-control {
+        font-size: 0.9rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    /* Alerts */
+    .alert {
+        font-size: 0.9rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Audit logs table - even wider */
+    #auditTable {
+        min-width: 900px !important;
+    }
+
+    #auditTable th,
+    #auditTable td {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.4rem !important;
+    }
+}
+
+/* ========================================
+   Small Mobile (max-width: 576px)
+   ======================================== */
+
+@media (max-width: 576px) {
+    /* Further reduce text sizes */
+    .display-4 {
+        font-size: 1.5rem !important;
+    }
+
+    .display-5 {
+        font-size: 1.3rem !important;
+    }
+
+    .lead {
+        font-size: 0.95rem;
+    }
+
+    /* Container even tighter */
+    .container {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    /* Cards more compact */
+    .card {
+        padding: 0;
+        margin-bottom: 0.75rem;
+    }
+
+    .card-header {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+
+    /* Stat cards */
+    .stat-card h6 {
+        font-size: 0.8rem;
+    }
+
+    .stat-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .stat-icon i {
+        font-size: 1.75rem !important;
+    }
+
+    /* Tables even more compact */
+    .table-responsive table,
+    .admin-table-wrapper table,
+    .admin-table {
+        min-width: 750px !important;
+        font-size: 0.8rem;
+    }
+
+    .table-responsive th,
+    .table-responsive td,
+    table th,
+    table td,
+    .admin-table th,
+    .admin-table td {
+        padding: 0.5rem 0.4rem !important;
+        font-size: 0.8rem;
+    }
+
+    /* Action buttons smaller */
+    .action-btn {
+        padding: 5px 8px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .action-btn i {
+        font-size: 0.75rem;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-lg {
+        padding: 0.65rem 1rem !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* Form controls */
+    .form-control {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.7rem;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+    }
+}
+
+/* ========================================
+   Tablet Landscape (768px - 1024px)
+   ======================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    /* Slightly smaller stats grid */
+    .row > .col-md-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    /* Tables adjust */
+    .table-responsive th,
+    .table-responsive td {
+        padding: 0.75rem 0.6rem;
+        font-size: 0.9rem;
+    }
+
+    /* Action buttons stay horizontal but closer */
+    .table-actions {
+        gap: 6px;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ========================================
+   Landscape Mobile Orientation
+   ======================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .display-4,
+    .display-5 {
+        font-size: 1.3rem !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .lead {
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .card {
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-card {
+        padding: 0.75rem;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+}
+
+/* ========================================
+   Scrollbar Styling (Webkit browsers)
+   ======================================== */
+
+.table-responsive::-webkit-scrollbar,
+.admin-table-wrapper::-webkit-scrollbar {
+    height: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-track,
+.admin-table-wrapper::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb,
+.admin-table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0, 217, 255, 0.5);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover,
+.admin-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 217, 255, 0.7);
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+/* Responsive visibility helpers */
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+}
+
+/* Button group mobile */
+.btn-group-mobile {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .btn-group-mobile {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group-mobile .btn {
+        width: 100%;
+    }
+}
+
+/* Fix for fixed width columns on mobile */
+@media (max-width: 768px) {
+    th[style*="width"],
+    td[style*="width"] {
+        width: auto !important;
+    }
+
+    th[style*="text-align:right"],
+    td[style*="text-align:right"] {
+        text-align: left !important;
+    }
+}
+
+/* Ensure no content is clipped */
+@media (max-width: 768px) {
+    * {
+        box-sizing: border-box;
+    }
+
+    /* Remove any overflow hidden that might clip content */
+    .container,
+    .row,
+    .col-md-12,
+    .card,
+    .card-body {
+        overflow: visible !important;
+    }
+
+    /* But keep table wrappers scrollable */
+    .table-responsive,
+    .admin-table-wrapper {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+    }
+}

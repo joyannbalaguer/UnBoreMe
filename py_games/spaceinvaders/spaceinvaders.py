@@ -343,16 +343,20 @@ class SpaceInvadersGame:
         self.screen.blit(overlay, (0, 0))
 
         text = self.pause_font.render("GAME OVER", True, TEXT_COLOR)
-        rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50))
+        rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 70))
         self.screen.blit(text, rect)
 
         score = self.instruction_font.render(f"Final Score: {self.score}", True, TEXT_COLOR)
-        rect = score.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
+        rect = score.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
         self.screen.blit(score, rect)
 
-        restart = self.instruction_font.render("Press SPACE to Restart", True, TEXT_COLOR)
-        rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 60))
+        restart = self.instruction_font.render("Press R or SPACE to Restart", True, TEXT_COLOR)
+        rect = restart.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
         self.screen.blit(restart, rect)
+        
+        quit_text = self.instruction_font.render("Press ESC to Close Game", True, TEXT_COLOR)
+        rect = quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 90))
+        self.screen.blit(quit_text, rect)
 
     # MAIN LOOP
     
@@ -370,17 +374,20 @@ class SpaceInvadersGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-                    elif event.key == pygame.K_SPACE:
+                    elif event.key in (pygame.K_SPACE, pygame.K_r):
                         if not self.game_running:
                             self.start()
                             game_over_drawn = False
-                        elif not self.game_paused:
+                        elif not self.game_paused and event.key == pygame.K_SPACE:
                             self.shoot()
                     elif event.key == pygame.K_p:
                         self.toggle_pause()
 
-            self.update(keys)
+            # Only update when game is actively running
+            if self.game_running and not self.game_paused:
+                self.update(keys)
 
+            # Draw appropriate screen
             if not self.game_running and not game_over_drawn:
                 self.draw_start_screen()
             else:
@@ -396,7 +403,6 @@ class SpaceInvadersGame:
             self.clock.tick(FPS)
 
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == "__main__":
