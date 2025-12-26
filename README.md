@@ -1,57 +1,62 @@
-# Flask Gaming Platform – UnBoreMe
+# UnBoreMe – Flask Gaming Platform
 
-UnBoreMe is a Flask web application that I developed as my final project.  
-The goal of this project was to apply what I learned about web development, databases, security, and object-oriented programming by building a complete and working system.
+UnBoreMe is a full-stack Flask web application developed as an academic project by a 2nd-year Information Technology student.  
+The goal of this project was to apply concepts from web development, backend systems, databases, security, and object-oriented programming by building a complete, data-driven platform.
 
-This platform includes user authentication, an admin panel, a blog feature, and several browser-based games.
+The application combines user management, content features, and multiple games into a single system where all activity is centrally tracked and managed.
+
+This project was built iteratively while learning Flask, backend architecture, and database-driven systems.
 
 ---
 
-## Features
+## Key Features
 
-### Authentication System
-- User registration with email OTP verification
-  - OTP expires after 10 minutes
-  - 5-minute resend cooldown
-- Login system using session management
-- Password reset functionality
-- Passwords are securely hashed using Bcrypt
-- Account activation and deactivation managed by admins
+### Authentication & Security
+- User registration with email OTP verification  
+  - OTP expires after 10 minutes  
+  - 5-minute resend cooldown  
+- Session-based login system  
+- Password reset functionality  
+- Passwords securely hashed using bcrypt  
+- Admin-controlled account activation and deactivation  
 
 ---
 
 ### User Dashboard
-- Edit personal profile information
-- Create, update, and delete personal blog posts
-- Access games enabled by the admin
-- View basic user statistics and activity
+- Edit personal profile information  
+- Create, update, and delete personal blog posts  
+- Access games enabled by administrators  
+- View personal activity and statistics  
+- Track individual and global game scores  
 
 ---
 
 ### Admin Panel
-- User Management (CRUD)
-  - Create, view, edit, and delete users
-  - Activate or deactivate user accounts
-- Game Management
-  - Enable or disable games
-  - Control which games are accessible to users
-- Audit Logs
-  - Track administrative actions for monitoring and security
+- User management (CRUD)
+  - Create, view, edit, and delete users  
+  - Activate or deactivate user accounts  
+- Game management
+  - Enable or disable games globally  
+  - Control which games are accessible to users  
+- Audit logs
+  - Track administrative actions for monitoring and security  
 
 ---
 
 ### Blog System
-- Create, read, update, and delete blog posts
-- View all public posts
-- Manage personal posts
-- Supports formatted text content
+- Create, read, update, and delete blog posts  
+- View all public posts  
+- Manage personal posts  
+- Supports formatted text content  
 
 ---
 
-### Games (Object-Oriented Design)
+### Games & Global Leaderboards
 
-The platform includes 8 games implemented using object-oriented programming concepts:
+The platform integrates multiple games directly into the system.  
+All games are connected to the backend and database, allowing scores to be stored, tracked, and displayed globally.
 
+**Included games:**
 1. Snake  
 2. Pong  
 3. Tetris  
@@ -62,23 +67,42 @@ The platform includes 8 games implemented using object-oriented programming conc
 8. Flappy Bird  
 
 Each game:
-- Uses object-oriented design
-- Can be played directly in the browser
-- Can be enabled or disabled by admins
-- Tracks user high scores
-- Global Leaderbourd
+- Uses object-oriented programming principles  
+- Is integrated with user accounts  
+- Stores scores in the database  
+- Appears in a global leaderboard  
+- Can be enabled or disabled by administrators  
+
+---
+
+## Database Design
+The application uses a relational MySQL database to manage users, authentication data, blog posts, games, scores, and audit logs.  
+Core tables include users, otp_tokens, posts, games, game_scores, user_games, and audit_logs to support dashboards and global statistics.
+
+---
+
+## System Architecture Overview
+- Modular Flask application using Blueprint architecture  
+- Clear separation of concerns (authentication, admin, games, blog)  
+- Centralized access control using custom decorators  
+- Database-driven dashboards and leaderboards  
+- Server-side validation and secure session handling  
 
 ---
 
 ## Technology Stack
+- Backend: Flask (Blueprint architecture)  
+- Database: MySQL (XAMPP / phpMyAdmin)  
+- Authentication: Flask-Bcrypt, session-based login  
+- Email: Flask-Mail (SMTP) for OTP verification  
+- Frontend: HTML, CSS, JavaScript  
+- Templates: Jinja2  
+- Security: Server-side validation and password hashing  
 
-- Backend: Flask with Blueprint architecture
-- Database: MySQL (via XAMPP / phpMyAdmin)
-- Authentication: Flask-Bcrypt, session-based login
-- Email: Flask-Mail (SMTP) for OTP verification
-- Frontend: HTML, CSS, and JavaScript
-- Templates: Jinja2
-- Security: Server-side validation and password hashing
+---
 
---http://127.0.0.1:5000
+## How to Run (Local Development)
 
+1. Clone the repository
+   ```bash
+   git clone https://github.com/joyannbalaguer/unboreme.git
