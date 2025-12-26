@@ -14,7 +14,7 @@ class Config:
     """Base configuration class"""
     
     # Flask
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = os.getenv('SECRET_KEY')
     FLASK_ENV = os.getenv('FLASK_ENV', 'development')
     
     # Database (MySQL)
