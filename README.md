@@ -99,10 +99,6 @@ Core tables include users, otp_tokens, posts, games, game_scores, user_games, an
 - Templates: Jinja2  
 - Security: Server-side validation and password hashing  
 
----
+## Author
 
-## How to Run (Local Development)
-
-1. Clone the repository
-   ```bash
-   git clone https://github.com/joyannbalaguer/unboreme.git
+Joy Ann Balaguer
